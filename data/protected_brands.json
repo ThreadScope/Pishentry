@@ -1,0 +1,65 @@
+[
+  {
+    "brand_id": "paypal",
+    "display_name": "PayPal",
+    "canonical_domains": ["paypal.com", "www.paypal.com"],
+    "screenshot_path": "data/reference/paypal/screenshot.png",
+    "logo_path": "data/reference/paypal/logo.png",
+    "dom_snapshot_path": "data/reference/paypal/dom.html",
+    "embedding_cache_id": "paypal_v1"
+  },
+  {
+    "brand_id": "google",
+    "display_name": "Google",
+    "canonical_domains": ["google.com", "accounts.google.com"],
+    "screenshot_path": "data/reference/google/screenshot.png",
+    "logo_path": "data/reference/google/logo.png",
+    "dom_snapshot_path": "data/reference/google/dom.html",
+    "embedding_cache_id": "google_v1"
+  },
+  {
+    "brand_id": "github",
+    "display_name": "GitHub",
+    "canonical_domains": ["github.com"],
+    "screenshot_path": "data/reference/github/screenshot.png",
+    "logo_path": "data/reference/github/logo.png",
+    "dom_snapshot_path": "data/reference/github/dom.html",
+    "embedding_cache_id": "github_v1"
+  },
+  {
+    "brand_id": "microsoft",
+    "display_name": "Microsoft / Office365",
+    "canonical_domains": ["microsoft.com", "office.com", "login.microsoftonline.com"],
+    "screenshot_path": "data/reference/microsoft/screenshot.png",
+    "logo_path": "data/reference/microsoft/logo.png",
+    "dom_snapshot_path": "data/reference/microsoft/dom.html",
+    "embedding_cache_id": "microsoft_v1"
+  },
+  {
+    "brand_id": "bankofamerica",
+    "display_name": "Bank of America",
+    "canonical_domains": ["bankofamerica.com"],
+    "screenshot_path": "data/reference/bankofamerica/screenshot.png",
+    "logo_path": "data/reference/bankofamerica/logo.png",
+    "dom_snapshot_path": "data/reference/bankofamerica/dom.html",
+    "embedding_cache_id": "bankofamerica_v1"
+  },
+  {
+    "brand_id": "chase",
+    "display_name": "Chase Bank",
+    "canonical_domains": ["chase.com"],
+    "screenshot_path": "data/reference/chase/screenshot.png",
+    "logo_path": "data/reference/chase/logo.png",
+    "dom_snapshot_path": "data/reference/chase/dom.html",
+    "embedding_cache_id": "chase_v1"
+  },
+  {
+    "brand_id": "dhl",
+    "display_name": "DHL Express",
+    "canonical_domains": ["dhl.com"],
+    "screenshot_path": "data/reference/dhl/screenshot.png",
+    "logo_path": "data/reference/dhl/logo.png",
+    "dom_snapshot_path": "data/reference/dhl/dom.html",
+    "embedding_cache_id": "dhl_v1"
+  }
+]
