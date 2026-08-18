@@ -288,7 +288,7 @@ st.markdown("""
 <div class="header-container">
   <div>
     <div class="brand-title">
-      🛡️ PhishSentry AI 
+      PhishSentry AI 
       <span style="color: #38bdf8; font-weight: 600; font-size: 0.85rem; background: rgba(56, 189, 248, 0.12); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.3);">ENTERPRISE SOC CONSOLE</span>
     </div>
     <div class="brand-subtitle">Multi-Modal Threat Attribution, Dual-Engine Visual Matching, TLS Telemetry & STIX 2.1 Ingestion</div>
@@ -301,7 +301,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Sidebar System Diagnostics & Configuration
-st.sidebar.markdown("### ⚙️ System Diagnostics")
+st.sidebar.markdown("### System Diagnostics")
 api_url_input = st.sidebar.text_input("FastAPI Endpoint", value=API_BASE_URL)
 
 try:
@@ -344,7 +344,7 @@ except Exception:
 # Sidebar Scan History Feed
 if st.session_state.scan_history:
   st.sidebar.markdown("---")
-  st.sidebar.markdown("### 📋 Live Session History")
+  st.sidebar.markdown("### Live Session History")
   for h in st.session_state.scan_history[:5]:
     prob = h["s_phish"] * 100
     p_color = "#ef4444" if prob >= 65 else ("#f59e0b" if prob >= 35 else "#10b981")
@@ -363,29 +363,29 @@ if st.session_state.scan_history:
 
 # Main Navigation Workflow Tabs
 main_tab_single, main_tab_batch, main_tab_lab = st.tabs([
-  "🔍 Single URL Deep Triage", 
-  "⚡ Multi-URL Batch Queue Scanner",
-  "🧪 Model Performance & Data Lab"
+  "Single URL Deep Triage", 
+  "Multi-URL Batch Queue Scanner",
+  "Model Performance & Data Lab"
 ])
 
 with main_tab_single:
   # Quick Preset Scenario Selector Bar
-  st.markdown("<div style='font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.4rem;'>⚡ Quick Test Scenario Presets:</div>", unsafe_allow_html=True)
+  st.markdown("<div style='font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.4rem;'>Quick Test Scenario Presets:</div>", unsafe_allow_html=True)
   p_col1, p_col2, p_col3, p_col4 = st.columns(4)
   with p_col1:
-    if st.button("💳 PayPal Typosquat", use_container_width=True):
+    if st.button("PayPal Typosquat", use_container_width=True):
       st.session_state.target_url_input = "http://paypa1-secure-login.tk/auth"
       st.rerun()
   with p_col2:
-    if st.button("🔑 Google Auth Lure", use_container_width=True):
+    if st.button("Google Auth Lure", use_container_width=True):
       st.session_state.target_url_input = "http://accounts-goog1e-verify.xyz/signin"
       st.rerun()
   with p_col3:
-    if st.button("📦 DHL Express Lure", use_container_width=True):
+    if st.button("DHL Express Lure", use_container_width=True):
       st.session_state.target_url_input = "http://dhl-express-tracking-parcel.xyz/login"
       st.rerun()
   with p_col4:
-    if st.button("🌐 Verified Safe Domain", use_container_width=True):
+    if st.button("Verified Safe Domain", use_container_width=True):
       st.session_state.target_url_input = "https://www.paypal.com"
       st.rerun()
 
@@ -651,7 +651,7 @@ with main_tab_single:
       "TLS & Cryptographic Telemetry",
       "DOM & Form Forensics",
       "Threat Intel & SIEM Rules",
-      "⚡ Pipeline Data Flow & Architecture"
+      "Pipeline Data Flow & Architecture"
     ])
 
 
@@ -1059,7 +1059,7 @@ with main_tab_single:
           st.error(f"Takedown generation error: {e}")
 
     with tab6:
-      st.markdown("##### ⚡ High-Performance Multi-Stage Asynchronous Data Flow Engine")
+      st.markdown("##### High-Performance Multi-Stage Asynchronous Data Flow Engine")
       st.caption("Visualizing the concurrent, non-blocking asynchronous pipeline architecture orchestrating PhishSentry AI scans.")
 
       # Execution Metrics HUD
@@ -1072,7 +1072,7 @@ with main_tab_single:
       st.markdown("""
       <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1.25rem;">
         <div style="font-size: 0.95rem; font-weight: 800; color: #38bdf8; margin-bottom: 0.75rem;">
-          🔄 End-to-End Multi-Modal Execution Pipeline
+          End-to-End Multi-Modal Execution Pipeline
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
           <div style="background: #1e293b; padding: 1rem; border-radius: 8px; border-left: 4px solid #38bdf8;">
