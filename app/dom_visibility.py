@@ -56,18 +56,32 @@ def clean_human_visible_dom_text(html_content: str) -> Tuple[str, bool, List[str
     try:
         soup = BeautifulSoup(html_content, "html.parser")
 
-        # 1. Remove HTML comments
+        # 1. Remove HTML comments safely
         for comment in soup.find_all(string=lambda text: isinstance(text, Comment)):
-            comment.extract()
-
+            try:
+                comment.extract()
+            except Exception:
+                pass
 
         # 2. Remove script, style, noscript, and SVG definition tags
         for tag in soup.find_all(["script", "style", "noscript", "svg", "defs", "clippath", "template"]):
-            tag.decompose()
+            try:
+                tag.decompose()
+            except Exception:
+                pass
 
-        # 3. Identify and strip CSS-hidden elements
+        # 3. Identify and strip CSS-hidden elements safely
+        to_decompose = []
         for element in soup.find_all(True):
+            if element is None or not hasattr(element, "attrs") or element.attrs is None:
+                continue
+
             style = element.get("style", "")
+            if isinstance(style, list):
+                style = " ".join(style)
+            elif not isinstance(style, str):
+                style = str(style) if style else ""
+
             hidden_attr = element.get("hidden")
             aria_hidden = element.get("aria-hidden")
 
@@ -80,11 +94,17 @@ def clean_human_visible_dom_text(html_content: str) -> Tuple[str, bool, List[str
                     if pattern.search(style):
                         is_hidden = True
                         has_obfuscation = True
-                        evasion_artifacts.append(f"CSS Invisible Element: Stripped tag <{element.name}> with hidden style: '{style.strip()}'")
+                        evasion_artifacts.append(f"CSS Invisible Element: Stripped tag <{getattr(element, 'name', 'elem')}> with hidden style: '{style.strip()}'")
                         break
 
             if is_hidden:
-                element.decompose()
+                to_decompose.append(element)
+
+        for el in to_decompose:
+            try:
+                el.decompose()
+            except Exception:
+                pass
 
         # 4. Extract sanitized text
         raw_text = soup.get_text(separator=" ", strip=True)

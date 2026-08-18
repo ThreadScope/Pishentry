@@ -239,15 +239,11 @@ except Exception:
   st.sidebar.info("Run `python start.py` to start both servers.")
 
 # Main Navigation Workflow Tabs
-main_tab_single, main_tab_batch, main_tab_certstream, main_tab_brands, main_tab_lab = st.tabs([
-  " Single URL Deep Triage", 
-  " Multi-URL Batch Queue Scanner",
-  " CertStream Zero-Day CT Feed",
-  " Enterprise Brand Governance",
-  " Model Performance & Data Lab"
+main_tab_single, main_tab_batch, main_tab_lab = st.tabs([
+  "Single URL Deep Triage", 
+  "Multi-URL Batch Queue Scanner",
+  "Model Performance & Data Lab"
 ])
-
-
 
 with main_tab_single:
   # URL Input Scan Form
@@ -257,11 +253,13 @@ with main_tab_single:
       url_input = st.text_input(
         "Target URL",
         value=st.session_state.target_url_input,
-        placeholder="Enter any URL (e.g. https://example.com, https://portal.company.com/login, http://suspicious-site.tk)...",
+        placeholder="Enter target URL (e.g. http://paypa1-security.tk, https://accounts.google.com, https://example.com)...",
         label_visibility="collapsed"
       )
     with col_submit:
-      submit_btn = st.form_submit_button(" Run Live Scan", use_container_width=True)
+      submit_btn = st.form_submit_button("Run Live Scan", use_container_width=True)
+
+
 
 
   if submit_btn and url_input:
@@ -329,10 +327,15 @@ with main_tab_single:
       verdict_text = "VERIFIED SAFE / LOW RISK"
       verdict_desc = "No significant structural, visual, or lexical brand spoofing indicators detected."
 
+    target_attr = data.get("target_attribution") or {}
+    entity_disp = target_attr.get("identity_display_name") or (matched_brand.upper() if matched_brand else "GENERIC / UNCLASSIFIED")
+    campaign_arch = target_attr.get("campaign_archetype") or "General Web Surface"
+    attr_conf = target_attr.get("attribution_confidence", 0.0)
+
     st.markdown(f"""
     <div class="{banner_class}">
       <div class="verdict-tag {tag_class}">{verdict_text}</div>
-      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
         <div>
           <div style="font-size: 2.2rem; font-weight: 800; font-family: 'JetBrains Mono', monospace;">
             {s_phish * 100:.1f}% <span style="font-size: 1rem; color: #94a3b8; font-weight: 500;">Phishing Probability ($S_{{phish}}$)</span>
@@ -340,8 +343,9 @@ with main_tab_single:
           <div style="font-size: 0.9rem; color: #cbd5e1; margin-top: 0.25rem;">{verdict_desc}</div>
         </div>
         <div style="text-align: right;">
-          <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Matched Target</div>
-          <div style="font-size: 1.25rem; font-weight: 700; color: #38bdf8;">{matched_brand.upper() if matched_brand else 'NONE'}</div>
+          <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Target Entity Attribution</div>
+          <div style="font-size: 1.25rem; font-weight: 700; color: #38bdf8;">{entity_disp}</div>
+          <div style="font-size: 0.75rem; color: #a855f7; font-weight: 600; margin-top: 2px;">Archetype: {campaign_arch} ({attr_conf*100:.0f}%)</div>
           <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">Pipeline Latency: {latency / 1000:.2f}s</div>
         </div>
       </div>
@@ -496,13 +500,13 @@ with main_tab_single:
       st.warning("️ **Reduced Confidence Mode**: Headless render timed out or candidate host was unreachable. Evaluated on lexical pre-filter fallback.")
 
     # Tabbed Forensic Workspace
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-
-      " Signal Attribution (SHAP)", 
-      "️ Live Real-Time Website Render",
-      " TLS & Cryptographic Telemetry",
-      " Real-Time DOM & Form Forensics",
-      "️ Threat Intel & SIEM Rules"
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+      "Signal Attribution (SHAP)", 
+      "Live Web Surface Render",
+      "TLS & Cryptographic Telemetry",
+      "DOM & Form Forensics",
+      "Threat Intel & SIEM Rules",
+      "⚡ Pipeline Data Flow & Architecture"
     ])
 
 
@@ -705,8 +709,111 @@ with main_tab_single:
 
 
     with tab5:
-      st.markdown("##### Real-Time Threat Intelligence & Automated SIEM Rules")
+      st.markdown("##### Autonomous AI Threat Intelligence, Incident Narrative & Mitigation")
       
+      # 1. Autonomous AI Incident Briefing & Tradecraft Narrative
+      narrative_data = data.get("threat_narrative") or {}
+      if narrative_data:
+        sev = narrative_data.get("severity_level", "HIGH")
+        sev_color = "#ef4444" if sev == "CRITICAL" else ("#f59e0b" if sev in ["HIGH", "MEDIUM"] else "#10b981")
+        st.markdown(f"""
+        <div style="background: #111827; border: 1px solid #1f2937; border-left: 5px solid {sev_color}; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="font-size: 1.05rem; font-weight: 800; color: #f8fafc;">{narrative_data.get('incident_title')}</span>
+            <span style="background: {sev_color}; color: #ffffff; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700;">{sev} SEVERITY</span>
+          </div>
+          <div style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 0.75rem; line-height: 1.5;">
+            <strong>Executive Summary:</strong> {narrative_data.get('executive_summary')}
+          </div>
+          <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.75rem; line-height: 1.5;">
+            <strong>Attacker Tradecraft Analysis:</strong> {narrative_data.get('threat_actor_tradecraft')}
+          </div>
+          <div style="font-size: 0.8rem; color: #38bdf8; font-weight: 600;">Recommended SOC Mitigation Checklist:</div>
+          <ul style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.3rem; margin-bottom: 0;">
+            {''.join([f'<li>{a}</li>' for a in narrative_data.get('recommended_soc_actions', [])])}
+          </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+      # 2. Autonomous Synthetic Honeytoken Trapping
+      honey_data = data.get("honeytoken_telemetry") or {}
+      if honey_data.get("is_trapped"):
+        st.markdown(f"""
+        <div style="background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.9rem; font-weight: 800; color: #ef4444;">TRAPPED CREDENTIAL EXFILTRATION DESTINATION</div>
+          <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.3rem;">
+            Protocol: <code>{honey_data.get('exfiltration_protocol')}</code> | Destination: <code>{honey_data.get('exfiltration_destination')}</code>
+          </div>
+          <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.2rem;">
+            Payload Preview: {honey_data.get('trapped_payload_preview')}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      # 3. Multi-Hop Redirect Chain Graph
+      red_graph = data.get("redirect_graph") or {}
+      if red_graph.get("hop_count", 0) > 1:
+        st.markdown(f"""
+        <div style="background: #131b29; border: 1px solid #1e293b; border-radius: 8px; padding: 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8;">MULTI-HOP REDIRECTION LINEAGE GRAPH ({red_graph.get('hop_count')} Hops)</div>
+          <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.3rem;">
+            Entry URL: <code>{red_graph.get('initial_url')}</code> &rarr; Final Landing: <code>{red_graph.get('final_destination_url')}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      # 4. Multi-Vendor Firewall & WAF Rules Exporter
+      st.markdown("###### Multi-Vendor Automated Firewall & WAF Rule Generation")
+      st.caption("Generate ready-to-apply block rules for enterprise perimeter firewalls and cloud edge WAFs.")
+      
+      fw_col1, fw_col2, fw_col3, fw_col4 = st.columns(4)
+      with fw_col1:
+        if st.button("Palo Alto (PAN-OS)", use_container_width=True):
+          try:
+            fw_resp = requests.post(f"{api_url_input}/export/firewall", json={"scan_result": data})
+            if fw_resp.status_code == 200:
+              pa_rule = fw_resp.json().get("palo_alto_cli")
+              st.code(pa_rule, language="bash")
+              st.download_button("Download Palo Alto Rule", data=pa_rule, file_name=f"palo_alto_{data.get('matched_brand', 'phish')}.txt")
+          except Exception as e:
+            st.error(f"Firewall generation error: {e}")
+
+      with fw_col2:
+        if st.button("Cloudflare WAF (JSON)", use_container_width=True):
+          try:
+            fw_resp = requests.post(f"{api_url_input}/export/firewall", json={"scan_result": data})
+            if fw_resp.status_code == 200:
+              cf_rule = fw_resp.json().get("cloudflare_waf_json")
+              st.code(cf_rule, language="json")
+              st.download_button("Download Cloudflare Rule", data=cf_rule, file_name=f"cloudflare_waf_{data.get('matched_brand', 'phish')}.json")
+          except Exception as e:
+            st.error(f"Cloudflare export error: {e}")
+
+      with fw_col3:
+        if st.button("Fortinet FortiGate", use_container_width=True):
+          try:
+            fw_resp = requests.post(f"{api_url_input}/export/firewall", json={"scan_result": data})
+            if fw_resp.status_code == 200:
+              fg_rule = fw_resp.json().get("fortigate_cli")
+              st.code(fg_rule, language="bash")
+              st.download_button("Download FortiGate Rule", data=fg_rule, file_name=f"fortigate_{data.get('matched_brand', 'phish')}.txt")
+          except Exception as e:
+            st.error(f"FortiGate export error: {e}")
+
+      with fw_col4:
+        if st.button("Suricata / Snort IPS", use_container_width=True):
+          try:
+            fw_resp = requests.post(f"{api_url_input}/export/firewall", json={"scan_result": data})
+            if fw_resp.status_code == 200:
+              sur_rule = fw_resp.json().get("suricata_ips_rule")
+              st.code(sur_rule, language="c")
+              st.download_button("Download Suricata Rule", data=sur_rule, file_name=f"suricata_{data.get('matched_brand', 'phish')}.rules")
+          except Exception as e:
+            st.error(f"Suricata export error: {e}")
+
+      st.divider()
+
+      # 5. SIEM & Takedown Rules
       c_wh1, c_wh2 = st.columns(2)
       with c_wh1:
         st.markdown("###### OASIS STIX 2.1 Threat Intel Bundle")
@@ -715,7 +822,7 @@ with main_tab_single:
           if stix_resp.status_code == 200:
             stix_json = stix_resp.json()
             st.download_button(
-              " Download STIX 2.1 JSON Bundle",
+              "Download STIX 2.1 JSON Bundle",
               data=json.dumps(stix_json, indent=2),
               file_name="phishsentry_stix_bundle.json",
               mime="application/json"
@@ -731,7 +838,7 @@ with main_tab_single:
         st.caption("Push live incident indicators directly to SIEM, Slack, MS Teams, or SOAR playbooks.")
         webhook_target_url = st.text_input("Webhook Destination URL", value="https://httpbin.org/post")
         
-        if st.button(" Dispatch Real-Time SOC Alert"):
+        if st.button("Dispatch Real-Time SOC Alert"):
           with st.spinner("Dispatching webhook alert..."):
             try:
               wh_resp = requests.post(
@@ -739,39 +846,39 @@ with main_tab_single:
                 json={
                   "webhook_url": webhook_target_url,
                   "scan_result": data,
-                  "custom_title": " PhishSentry Real-Time Threat Incident"
+                  "custom_title": "PhishSentry Real-Time Threat Incident"
                 },
                 timeout=10
               )
               if wh_resp.status_code == 200 and wh_resp.json().get("success"):
-                st.success(" Real-Time SOC Incident Alert dispatched successfully!")
+                st.success("Real-Time SOC Incident Alert dispatched successfully!")
               else:
                 st.error(f"Webhook dispatch failed: {wh_resp.text}")
             except Exception as e:
               st.error(f"Webhook connection error: {e}")
 
       st.divider()
-      st.markdown("###### ️ Enterprise SIEM Detection Rules & Firewall Feeds")
+      st.markdown("###### Enterprise SIEM Detection Rules & Firewall Feeds")
       r_col1, r_col2, r_col3 = st.columns(3)
       with r_col1:
-        if st.button(" Generate Sigma Rule (YAML)"):
+        if st.button("Generate Sigma Rule (YAML)"):
           try:
             sig_resp = requests.post(f"{api_url_input}/export/sigma", json={"scan_result": data})
             if sig_resp.status_code == 200:
               sig_yaml = sig_resp.json().get("sigma_yaml")
               st.code(sig_yaml, language="yaml")
-              st.download_button(" Download Sigma Rule (.yml)", data=sig_yaml, file_name="phishsentry_sigma_rule.yml", mime="text/yaml")
+              st.download_button("Download Sigma Rule (.yml)", data=sig_yaml, file_name="phishsentry_sigma_rule.yml", mime="text/yaml")
           except Exception as e:
             st.error(f"Sigma generation error: {e}")
       
       with r_col2:
-        if st.button(" Generate YARA Network Rule"):
+        if st.button("Generate YARA Network Rule"):
           try:
             yar_resp = requests.post(f"{api_url_input}/export/yara", json={"scan_result": data})
             if yar_resp.status_code == 200:
               yar_rule = yar_resp.json().get("yara_rule")
               st.code(yar_rule, language="c")
-              st.download_button(" Download YARA Rule (.yar)", data=yar_rule, file_name="phishsentry_rule.yar", mime="text/plain")
+              st.download_button("Download YARA Rule (.yar)", data=yar_rule, file_name="phishsentry_rule.yar", mime="text/plain")
           except Exception as e:
             st.error(f"YARA generation error: {e}")
 
@@ -779,7 +886,7 @@ with main_tab_single:
         try:
           bl_resp = requests.get(f"{api_url_input}/export/blocklist")
           if bl_resp.status_code == 200:
-            st.download_button(" Download DNS Firewall Feed (.txt)", data=bl_resp.text, file_name="phishsentry_dns_blocklist.txt", mime="text/plain")
+            st.download_button("Download DNS Firewall Feed (.txt)", data=bl_resp.text, file_name="phishsentry_dns_blocklist.txt", mime="text/plain")
         except Exception:
           pass
 
@@ -787,16 +894,16 @@ with main_tab_single:
       st.markdown("###### 1-Click Automated Abuse Takedown Generator (RFC 2142 / DMCA)")
       st.caption("Auto-resolves Registrar & Hosting ASN abuse desks, compiles timestamped Playwright evidence, and formats an official legal takedown notice.")
       
-      if st.button("️ Generate Official Abuse Takedown Package"):
+      if st.button("Generate Official Abuse Takedown Package"):
         try:
           td_resp = requests.post(f"{api_url_input}/takedown/generate", json={"scan_result": data})
           if td_resp.status_code == 200:
             td_pkg = td_resp.json()
-            st.success(f" Takedown package generated for **{td_pkg.get('target_domain')}**")
+            st.success(f"Takedown package generated for **{td_pkg.get('target_domain')}**")
             st.markdown(f"**Registrar Abuse Desk:** `{td_pkg.get('registrar_abuse_email')}` | **Hosting CERT:** `{td_pkg.get('hosting_abuse_email')}`")
             st.text_area("Official Abuse Notice Body (Copy & Send)", value=td_pkg.get("body_text", ""), height=220)
             st.download_button(
-              " Download Legal Takedown Notice (.txt)",
+              "Download Legal Takedown Notice (.txt)",
               data=td_pkg.get("body_text", ""),
               file_name=f"takedown_{td_pkg.get('target_domain')}.txt",
               mime="text/plain"
@@ -806,6 +913,81 @@ with main_tab_single:
         except Exception as e:
           st.error(f"Takedown generation error: {e}")
 
+    with tab6:
+      st.markdown("##### ⚡ High-Performance Multi-Stage Asynchronous Data Flow Engine")
+      st.caption("Visualizing the concurrent, non-blocking asynchronous pipeline architecture orchestrating PhishSentry AI scans.")
+
+      # Execution Metrics HUD
+      p_c1, p_c2, p_c3, p_c4 = st.columns(4)
+      p_c1.metric("Pipeline Architecture", "4-Stage Async")
+      p_c2.metric("Concurrency Mode", "Thread-Pooled I/O")
+      p_c3.metric("Decision Engine", "Hierarchical P1-P4")
+      p_c4.metric("Total Latency", f"{latency:.1f} ms")
+
+      st.markdown("""
+      <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 1.25rem; margin-top: 1rem; margin-bottom: 1.25rem;">
+        <div style="font-size: 0.95rem; font-weight: 800; color: #38bdf8; margin-bottom: 0.75rem;">
+          🔄 End-to-End Multi-Modal Execution Pipeline
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div style="background: #1e293b; padding: 1rem; border-radius: 8px; border-left: 4px solid #38bdf8;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Stage 1: Async Ingestion & Network Lineage</div>
+            <ul style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.3rem; margin-bottom: 0; padding-left: 1.2rem;">
+              <li>URL Normalization & Suffix Splitting</li>
+              <li>Shannon Entropy & Levenshtein Lexical Analysis</li>
+              <li>Concurrent Headless Playwright Stealth Browser Render</li>
+              <li>Concurrent TLS Handshake & SAN Certificate Probe</li>
+              <li>Async Multi-Hop Redirection Graph Tracing</li>
+            </ul>
+          </div>
+          <div style="background: #1e293b; padding: 1rem; border-radius: 8px; border-left: 4px solid #a855f7;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Stage 2: Parallel Multi-Modal Feature Extraction</div>
+            <ul style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.3rem; margin-bottom: 0; padding-left: 1.2rem;">
+              <li>ResNet-50 2048-dim Visual Latent Embeddings</li>
+              <li>64-bit Perceptual Layout dHash & Color Histograms</li>
+              <li>DOM Structural N-Grams & Brand Token Disambiguation</li>
+              <li>Deep DOM Node Forensics & Form Action Destination Audit</li>
+              <li>Optical Character Recognition (OCR) on Viewport Canvas</li>
+              <li>Quishing / QR Code Matrix Scanner</li>
+              <li>Anti-Bot Interstitial & Cloaking Classifier</li>
+              <li>Phishing Kit & C2 Telegram Exfiltration Fingerprinting</li>
+            </ul>
+          </div>
+          <div style="background: #1e293b; padding: 1rem; border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Stage 3: Decision, Attribution & Fusion</div>
+            <ul style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.3rem; margin-bottom: 0; padding-left: 1.2rem;">
+              <li>Hierarchical Brand Resolution (P1 Lexical → P2 DOM → P3 Visual)</li>
+              <li>Visual Anomaly Difference Heatmap Synthesis</li>
+              <li>Multi-Modal XGBoost Classifier & TreeSHAP Contributions</li>
+              <li>Phishpedia (USENIX '21) Consistency Verification</li>
+              <li>AiTM Reverse Proxy Detection & Session Interception Rules</li>
+              <li>Target Identity & Campaign Archetype Classifier</li>
+              <li>Synthetic Honeytoken Trapping & Exfiltration Destination Check</li>
+              <li>Canonical Domain Safety Guard & Risk Score Normalization</li>
+            </ul>
+          </div>
+          <div style="background: #1e293b; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">Stage 4: Automated SOC Defensive Output</div>
+            <ul style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.3rem; margin-bottom: 0; padding-left: 1.2rem;">
+              <li>Autonomous AI Incident Narrative & Executive Briefing</li>
+              <li>Multi-Vendor Firewall & WAF Rules (Palo Alto, Cloudflare, Fortinet, Cisco, Suricata)</li>
+              <li>RFC 2142 / DMCA Registrar & Host Abuse Takedown Notices</li>
+              <li>OASIS STIX 2.1 Threat Intelligence Bundle Generation</li>
+              <li>Real-Time Webhook Alert Dispatching (SIEM / Slack)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      """, unsafe_allow_html=True)
+
+      st.markdown("###### Pipeline Component Performance Matrix")
+      stage_records = [
+        {"Pipeline Stage": "Stage 1: Async Ingestion & Network Probe", "Execution Mode": "AsyncIO Gather", "Components": "Lexical, Playwright Chromium, TLS Prober, Redirect Graph", "Target Latency": "< 1200 ms"},
+        {"Pipeline Stage": "Stage 2: Parallel Feature Extraction", "Execution Mode": "Thread-Pool Workers", "Components": "ResNet-50, dHash, DOM Forensics, OCR, Quishing, Cloaking, Kits", "Target Latency": "< 450 ms"},
+        {"Pipeline Stage": "Stage 3: Decision, Attribution & Fusion", "Execution Mode": "In-Memory CPU", "Components": "Brand Resolver, XGBoost, TreeSHAP, Phishpedia, AiTM, Honeytokens", "Target Latency": "< 80 ms"},
+        {"Pipeline Stage": "Stage 4: Automated SOC Defensive Output", "Execution Mode": "Concurrent Async", "Components": "Threat Narrative, Multi-Vendor Firewall Rules, Takedown Package", "Target Latency": "< 30 ms"}
+      ]
+      st.dataframe(pd.DataFrame(stage_records), use_container_width=True)
 
   else:
     st.markdown("""
@@ -904,111 +1086,6 @@ with main_tab_batch:
           )
       except Exception:
         pass
-
-with main_tab_certstream:
-  st.markdown("#### Real-Time Certificate Transparency (CertStream) Zero-Day Discovery Feed")
-  st.markdown("""
-  *Inspired by the **Phishpedia (USENIX '21)** live monitoring architecture:*
-  Continuously ingests newly issued SSL/TLS certificates from global Certificate Transparency (CT) logs,
-  instantly matching permutations against protected enterprise brands before domain reputation indexing.
-  """)
-  
-  col_cs_btn, col_cs_stat = st.columns([1, 3])
-  with col_cs_btn:
-    refresh_cs = st.button(" Poll Real-Time CT Stream", use_container_width=True)
-    
-  try:
-    cs_resp = requests.get(f"{api_url_input}/certstream/feed", timeout=5)
-    cs_events = cs_resp.json() if cs_resp.status_code == 200 else []
-  except Exception:
-    cs_events = []
-
-  if cs_events:
-    cs_m1, cs_m2, cs_m3 = st.columns(3)
-    cs_m1.metric("Live CT Certificates Ingested", len(cs_events))
-    cs_m2.metric(" Zero-Day Brand Lures", sum(1 for e in cs_events if e.get("risk_level") == "CRITICAL"))
-    cs_m3.metric("Discovery Mode", "Pre-VirusTotal Stream")
-
-    st.markdown("##### Emerging Zero-Day Certificates Captured")
-    cs_records = []
-    for ev in cs_events:
-      cs_records.append({
-        "Risk Level": ev.get("risk_level"),
-        "Targeted Brand": (ev.get("matched_target_brand") or "Generic").upper(),
-        "Issued Domain": ev.get("domain"),
-        "Certificate Authority (Issuer)": ev.get("issuer"),
-        "Zero-Day Status": " ZERO-DAY (Pre-Blocklist)",
-        "Detection Heuristics": ", ".join(ev.get("heuristic_triggers", []))
-      })
-    
-    df_cs = pd.DataFrame(cs_records)
-    st.dataframe(df_cs, use_container_width=True)
-  else:
-    st.info("Listening for new Certificate Transparency log emissions...")
-
-with main_tab_brands:
-
-  st.markdown("#### Protected Brand Governance & Dynamic Auto-Provisioning")
-  st.markdown("Manage enterprise reference baselines and dynamically onboard custom corporate brands into the AI visual & DOM detection engines.")
-
-  try:
-    b_list_resp = requests.get(f"{api_url_input}/brands", timeout=5)
-    current_brands = b_list_resp.json() if b_list_resp.status_code == 200 else []
-  except Exception:
-    current_brands = []
-
-  st.markdown(f"##### Currently Protected Brands ({len(current_brands)})")
-  
-  b_cols = st.columns(3)
-  for idx, cb in enumerate(current_brands):
-    col_idx = idx % 3
-    with b_cols[col_idx]:
-      st.markdown(f"""
-      <div class="metric-card" style="margin-bottom: 1rem;">
-        <div style="font-size: 1rem; font-weight: 700; color: #38bdf8;">{cb.get('display_name', cb.get('brand_id'))}</div>
-        <div style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.4rem;">ID: <code>{cb.get('brand_id')}</code></div>
-        <div style="font-size: 0.8rem; color: #cbd5e1;">Canonical: <strong style="color: #f8fafc;">{', '.join(cb.get('canonical_domains', []))}</strong></div>
-        <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.2rem;">SSL Issuer: <strong style="color: #10b981;">{cb.get('official_cert_issuer', 'DigiCert')}</strong></div>
-      </div>
-      """, unsafe_allow_html=True)
-
-  st.divider()
-  st.markdown("##### Onboard New Protected Enterprise / Partner Brand")
-  with st.form("custom_brand_form"):
-    cb_f1, cb_f2 = st.columns(2)
-    with cb_f1:
-      form_brand_id = st.text_input("Brand Identifier (lowercase ID)", placeholder="e.g. okta, slack, zoom")
-      form_display_name = st.text_input("Display Name", placeholder="e.g. Okta Identity Cloud")
-      form_canonical = st.text_input("Canonical Domains (comma-separated)", placeholder="e.g. okta.com, login.okta.com")
-    with cb_f2:
-      form_login_url = st.text_input("Official Login URL", placeholder="e.g. https://login.okta.com")
-      form_color = st.color_picker("Brand Primary Color", value="#007dc1")
-      form_advice = st.text_input("Security Advisory", value="Verify organization subdomain before entering credentials.")
-    
-    submit_brand_btn = st.form_submit_button(" Onboard Brand into AI Engine")
-
-    if submit_brand_btn:
-      if not form_brand_id or not form_canonical:
-        st.error("Please enter Brand ID and at least one canonical domain.")
-      else:
-        canon_list = [d.strip() for d in form_canonical.split(",") if d.strip()]
-        payload = {
-          "brand_id": form_brand_id.lower().strip(),
-          "display_name": form_display_name.strip() or form_brand_id.title(),
-          "canonical_domains": canon_list,
-          "official_login_url": form_login_url.strip() or f"https://{canon_list[0]}",
-          "brand_color": form_color,
-          "security_advice": form_advice
-        }
-        try:
-          reg_resp = requests.post(f"{api_url_input}/brands/register", json=payload, timeout=10)
-          if reg_resp.status_code == 200:
-            st.success(f" Brand '{form_display_name or form_brand_id}' onboarded and visual embeddings cached successfully!")
-            st.rerun()
-          else:
-            st.error(f"Registration failed: {reg_resp.text}")
-        except Exception as e:
-          st.error(f"Connection error: {e}")
 
 with main_tab_lab:
   st.markdown("#### Multi-Modal Machine Learning & Training Data Lab")

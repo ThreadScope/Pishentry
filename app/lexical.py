@@ -160,8 +160,10 @@ def analyze_lexical(
                 best_matched_brand = brand_clean
                 max_lev_sim = sim
 
-    if min_dist == 999:
-        min_dist = 0
+    # Only assign best_matched_brand if similarity meets high confidence threshold
+    if min_dist == 999 or (max_lev_sim < 0.60 and min_dist > 2 and not brand_exact_in_token):
+        if min_dist == 999:
+            min_dist = 0
         best_matched_brand = ""
         max_lev_sim = 0.0
 

@@ -163,6 +163,62 @@ class TakedownPackageResponse(BaseModel):
   rfc2142_notice: str
   evidence_summary: Dict[str, Any]
 
+class TargetAttributionTelemetry(BaseModel):
+  target_identity: str
+  identity_display_name: str
+  campaign_archetype: str
+  attribution_confidence: float = 0.0
+  is_canonical_identity: bool = False
+  impersonation_evidence: List[str] = []
+  suggested_mitigation: str = ""
+
+class HoneytokenExfiltrationTelemetry(BaseModel):
+  is_trapped: bool = False
+  decoy_identifier: str = ""
+  exfiltration_destination: Optional[str] = None
+  exfiltration_protocol: Optional[str] = None
+  exfiltration_host: Optional[str] = None
+  is_external_c2: bool = False
+  trapped_payload_preview: Optional[str] = None
+  mitre_technique: str = "T1056.001"
+  evidence: List[str] = []
+
+class VisualOCRTelemetry(BaseModel):
+  has_in_image_text: bool = False
+  extracted_text_snippet: str = ""
+  detected_brand_keywords: List[str] = []
+  detected_security_keywords: List[str] = []
+  confidence_score: float = 0.0
+  evidence: List[str] = []
+
+class RedirectGraphTelemetry(BaseModel):
+  hop_count: int = 0
+  initial_url: str = ""
+  final_destination_url: str = ""
+  has_url_shortener: bool = False
+  has_open_redirect: bool = False
+  has_protocol_downgrade: bool = False
+  unique_domains_in_chain: int = 1
+  graph_risk_score: float = 0.0
+  evidence: List[str] = []
+
+class ThreatNarrativeResponse(BaseModel):
+  incident_title: str
+  severity_level: str = "CRITICAL"
+  threat_actor_tradecraft: str
+  executive_summary: str
+  forensic_indicators_of_compromise: List[str] = []
+  recommended_soc_actions: List[str] = []
+
+class MultiVendorFirewallResponse(BaseModel):
+  target_domain: str
+  target_ip: str = "any"
+  palo_alto_cli: str
+  cloudflare_waf_json: str
+  fortigate_cli: str
+  cisco_asa_acl: str
+  suricata_ips_rule: str
+
 class ScanResult(BaseModel):
   url: str
   s_lex: float
@@ -184,6 +240,12 @@ class ScanResult(BaseModel):
   phishpedia_consistency: Optional[PhishpediaTelemetry] = None
   redirect_trace: Optional[RedirectTraceTelemetry] = None
   kit_fingerprint: Optional[PhishingKitTelemetry] = None
+  target_attribution: Optional[TargetAttributionTelemetry] = None
+  honeytoken_telemetry: Optional[HoneytokenExfiltrationTelemetry] = None
+  visual_ocr: Optional[VisualOCRTelemetry] = None
+  redirect_graph: Optional[RedirectGraphTelemetry] = None
+  threat_narrative: Optional[ThreatNarrativeResponse] = None
+  firewall_rules: Optional[MultiVendorFirewallResponse] = None
   latency_ms: float
 
 

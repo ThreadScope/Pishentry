@@ -23,9 +23,13 @@ from app.schemas import (
     DOMDeepForensicsTelemetry, FormActionAuditDetail,
     PhishpediaTelemetry, CertStreamEventSchema,
     RedirectTraceTelemetry, PhishingKitTelemetry,
-    TakedownPackageResponse
+    TakedownPackageResponse,
+    TargetAttributionTelemetry, HoneytokenExfiltrationTelemetry,
+    VisualOCRTelemetry, RedirectGraphTelemetry,
+    ThreatNarrativeResponse, MultiVendorFirewallResponse
 )
 
+from app.pipeline import ScanPipeline
 from app.lexical import analyze_lexical
 from app.renderer import render_url, start_renderer, close_renderer
 from app.dom_similarity import match_dom_against_brands
@@ -45,6 +49,12 @@ from app.certstream_monitor import evaluate_certstream_domain, generate_sample_c
 from app.redirect_tracer import trace_redirect_hops
 from app.kit_fingerprinter import fingerprint_phishing_kit
 from app.takedown_generator import generate_abuse_takedown_package
+from app.target_attribution import attribute_target_identity
+from app.honeytoken_interactor import analyze_outbound_network_requests, generate_canary_identity
+from app.visual_ocr import extract_visual_text_from_screenshot
+from app.redirect_graph import trace_redirect_graph
+from app.threat_narrative import generate_threat_narrative
+from app.firewall_rules import generate_multi_vendor_firewall_rules
 
 
 
@@ -191,399 +201,27 @@ def health_check():
 def get_protected_brands():
     return [BrandInfo(**b) for b in state.brands_data]
 
+def get_pipeline() -> ScanPipeline:
+    return ScanPipeline(
+        brands_data=state.brands_data,
+        brand_names=state.brand_names,
+        canonical_map=state.canonical_map,
+        brand_dom_map=state.brand_dom_map,
+        embedder=state.embedder,
+        visual_store=state.visual_store,
+        fusion_model=state.fusion_model
+    )
+
 async def _execute_single_scan(url: str) -> ScanResult:
-    start_time = time.time()
     cleaned_url = url.strip()
-    
     if not cleaned_url or not (cleaned_url.startswith("http://") or cleaned_url.startswith("https://") or "." in cleaned_url):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Malformed URL. URL must include a valid hostname or domain scheme."
         )
 
-    # Parallel Execution: (Stage 1: Lexical + Stage 2: Render + Stage 2b: TLS Telemetry)
-    lex_res = analyze_lexical(cleaned_url, state.brand_names, canonical_domain_map=state.canonical_map)
-    s_lex = lex_res.s_lex
-
-    # Execute Playwright render and TLS probe concurrently
-    render_task = render_url(cleaned_url, timeout_ms=10000)
-    tls_task = extract_tls_telemetry(cleaned_url, timeout_seconds=3.0)
-
-    (screenshot_bytes, dom_html), raw_tls = await asyncio.gather(render_task, tls_task)
-
-    tls_telemetry = TLSTelemetry(
-        has_tls=raw_tls.has_tls,
-        issuer=raw_tls.issuer,
-        subject=raw_tls.subject,
-        san_list=raw_tls.san_list,
-        valid_from=raw_tls.valid_from,
-        valid_to=raw_tls.valid_to,
-        days_to_expiry=raw_tls.days_to_expiry,
-        is_self_signed=raw_tls.is_self_signed,
-        is_free_ca=raw_tls.is_free_ca,
-        resolved_ip=raw_tls.resolved_ip,
-        error_detail=raw_tls.error_detail
-    )
-
-    s_dom = None
-    s_vis = None
-    matched_brand = None
-    screenshot_rel_url = None
-    matched_brand_screenshot_rel_url = None
-    visual_forensics = None
-    scan_id = str(uuid.uuid4())[:8]
-
-    # Problem Statement 2: Bot-wall / Cloaking Interstitial Detection
-    cloaking_raw = analyze_cloaking_and_anti_bot(dom_html, cleaned_url)
-    cloaking_telemetry = CloakingTelemetry(
-        is_cloaked=cloaking_raw.is_cloaked,
-        interstitial_type=cloaking_raw.interstitial_type,
-        evasion_techniques=cloaking_raw.evasion_techniques,
-        is_bot_wall=cloaking_raw.is_bot_wall,
-        advisory=cloaking_raw.advisory
-    )
-
-    if screenshot_bytes is not None and dom_html is not None:
-        async def run_dom():
-            return match_dom_against_brands(dom_html, state.brand_dom_map)
-
-        async def run_vis():
-            if state.visual_store is not None:
-                return state.visual_store.find_best_match(screenshot_bytes)
-            return 0.0, None
-
-        (dom_score, dom_matched_brand), (vis_score, vis_matched_brand) = await asyncio.gather(
-            run_dom(), run_vis()
-        )
-
-        s_dom = dom_score
-        s_vis = vis_score
-
-        # Select best matched brand with proper multi-modal hierarchy:
-        # 1. Lexical / URL ground-truth match (e.g. accounts.google.com, paypa1.xyz)
-        # 2. DOM semantic token match (e.g. "Google", "Use your Google Account")
-        # 3. High-confidence Deep visual feature match (if confident >= 0.70 AND supported by DOM/lexical)
-        if lex_res.matched_brand and lex_res.levenshtein_sim >= 0.6:
-            matched_brand = lex_res.matched_brand
-        elif dom_matched_brand and dom_score >= 0.40:
-            matched_brand = dom_matched_brand
-        elif vis_matched_brand and vis_score >= 0.70 and dom_score >= 0.30:
-            matched_brand = vis_matched_brand
-        elif vis_matched_brand and vis_score >= 0.85:
-            matched_brand = vis_matched_brand
-        else:
-            matched_brand = None
-
-        # Synchronize signal scores with actual confirmed brand to prevent false visual bleed on generic pages
-        if matched_brand is not None:
-            s_dom = dom_score if dom_matched_brand == matched_brand else 0.0
-            s_vis = vis_score if vis_matched_brand == matched_brand else 0.0
-        else:
-            s_dom = 0.0
-            s_vis = 0.0
-
-        # Save scan screenshot artifact
-        artifact_filename = f"scan_{scan_id}.png"
-        artifact_path = os.path.join(ARTIFACTS_DIR, artifact_filename)
-        try:
-            with open(artifact_path, "wb") as f:
-                f.write(screenshot_bytes)
-            screenshot_rel_url = f"/artifacts/{artifact_filename}"
-        except Exception as e:
-            logger.warning(f"Could not persist scan screenshot artifact: {e}")
-
-        # Compute In-Depth Visual Forensics & Difference Heatmap ONLY for actual detected brand
-        target_brand_for_diff = matched_brand
-        if target_brand_for_diff and state.visual_store is not None:
-            brand_ref_img_path = None
-            for b in state.brands_data:
-                if b["brand_id"] == target_brand_for_diff:
-                    brand_ref_img_path = os.path.join(BASE_DIR, b["screenshot_path"].replace("/", os.sep))
-                    break
-
-            
-            if brand_ref_img_path and os.path.exists(brand_ref_img_path):
-                # 1. Heatmap
-                heatmap_rel_url, anomaly_score = generate_visual_difference_heatmap(
-                    screenshot_bytes, brand_ref_img_path, scan_id
-                )
-                
-                # 2. Detailed individual visual metrics
-                cand_emb = state.embedder.get_image_embedding(screenshot_bytes)
-                ref_emb = state.visual_store.brand_embeddings.get(target_brand_for_diff)
-                cos_sim = compute_cosine_similarity(cand_emb, ref_emb) if ref_emb is not None else 0.0
-
-                try:
-                    c_pil = Image.open(io.BytesIO(screenshot_bytes))
-                    r_pil = Image.open(brand_ref_img_path)
-                    c_hash = compute_image_dhash(c_pil)
-                    r_hash = compute_image_dhash(r_pil)
-                    dhash_sim = compute_dhash_similarity(c_hash, r_hash)
-                    color_sim = compute_color_histogram_similarity(c_pil, r_pil)
-                except Exception:
-                    dhash_sim = 0.0
-                    color_sim = 0.0
-
-                # 3. Official Brand Portal info
-                official_portal = None
-                for b in state.brands_data:
-                    if b["brand_id"] == target_brand_for_diff:
-                        official_portal = OfficialBrandPortal(
-                            brand_id=b["brand_id"],
-                            display_name=b["display_name"],
-                            official_login_url=b.get("official_login_url", f"https://{b['canonical_domains'][0]}"),
-                            canonical_domains=b.get("canonical_domains", []),
-                            brand_color=b.get("brand_color", "#003087"),
-                            official_cert_issuer=b.get("official_cert_issuer", "Verified Official TLS CA"),
-                            security_advice=b.get("security_advice", "Verify official domain certificate."),
-                            logo_url=f"/{b['logo_path'].replace(os.sep, '/')}",
-                            screenshot_url=f"/{b['screenshot_path'].replace(os.sep, '/')}"
-                        )
-                        break
-
-                visual_forensics = VisualForensicsDetail(
-                    resnet_feature_sim=cos_sim,
-                    layout_dhash_sim=dhash_sim,
-                    color_histogram_sim=color_sim,
-                    diff_heatmap_url=heatmap_rel_url,
-                    anomaly_score=anomaly_score,
-                    official_portal=official_portal
-                )
-
-    else:
-        logger.warning(f"Render failed or timed out for {cleaned_url}. Falling back to lexical pre-filter.")
-        if lex_res.matched_brand:
-            matched_brand = lex_res.matched_brand
-
-    # Look up matched brand reference screenshot
-    if matched_brand:
-        for b in state.brands_data:
-            if b["brand_id"] == matched_brand:
-                rel_path = b["screenshot_path"].replace("\\", "/")
-                matched_brand_screenshot_rel_url = f"/{rel_path}" if not rel_path.startswith("/") else rel_path
-                break
-
-    # Problem Statement 1: AiTM Reverse Proxy Analysis
-    aitm_raw = detect_aitm_proxy(
-        url=cleaned_url,
-        s_vis=s_vis,
-        s_dom=s_dom,
-        matched_brand=matched_brand,
-        is_canonical=lex_res.is_canonical_domain,
-        tls_telemetry=tls_telemetry,
-        dom_html=dom_html
-    )
-    aitm_telemetry = AiTMTelemetry(
-        is_aitm_suspect=aitm_raw.is_aitm_suspect,
-        confidence_level=aitm_raw.confidence_level,
-        mitre_attack_id=aitm_raw.mitre_attack_id,
-        target_brand=aitm_raw.target_brand,
-        reasons=aitm_raw.reasons,
-        risk_score_boost=aitm_raw.risk_score_boost
-    )
-
-    # Problem Statement 4: Optical QR Code / Quishing Analysis
-    quishing_raw = scan_for_qr_codes(screenshot_bytes)
-    quishing_telemetry = QuishingTelemetry(
-        has_qr_code=quishing_raw.has_qr_code,
-        confidence=quishing_raw.confidence,
-        decoded_url=quishing_raw.decoded_url,
-        is_quishing_suspect=quishing_raw.is_quishing_suspect,
-        mitre_attack_id=quishing_raw.mitre_attack_id,
-        details=quishing_raw.details
-    )
-
-    # Problem Statement 5: Semantic Domain Purpose & Content Swapping Analysis
-    semantic_raw = analyze_domain_purpose_alignment(
-        url=cleaned_url,
-        dom_html=dom_html,
-        s_lex_brand=lex_res.matched_brand,
-        s_vis_brand=matched_brand,
-        is_canonical=lex_res.is_canonical_domain
-    )
-    semantic_telemetry = SemanticAlignmentTelemetry(
-        is_discrepancy_detected=semantic_raw.is_discrepancy_detected,
-        domain_intent_brand=semantic_raw.domain_intent_brand,
-        rendered_content_brand=semantic_raw.rendered_content_brand,
-        discrepancy_type=semantic_raw.discrepancy_type,
-        alignment_score=semantic_raw.alignment_score,
-        mitre_attack_id=semantic_raw.mitre_attack_id,
-        reasons=semantic_raw.reasons,
-        forensic_summary=semantic_raw.forensic_summary
-    )
-
-    # Low-Latency DOM Node & Form Action Deep Forensics
-    dom_forensics_raw = extract_dom_deep_forensics(
-        dom_html=dom_html,
-        candidate_url=cleaned_url,
-        canonical_domains=state.canonical_map.get(matched_brand) if matched_brand else None
-    )
-    dom_forensics = DOMDeepForensicsTelemetry(
-        total_dom_nodes=dom_forensics_raw.total_dom_nodes,
-        form_count=dom_forensics_raw.form_count,
-        password_input_count=dom_forensics_raw.password_input_count,
-        form_actions=[
-            FormActionAuditDetail(
-                form_id=fa.form_id,
-                form_name=fa.form_name,
-                action_url=fa.action_url,
-                method=fa.method,
-                target_domain=fa.target_domain,
-                is_external_mismatch=fa.is_external_mismatch,
-                input_fields=fa.input_fields,
-                has_password_field=fa.has_password_field
-            ) for fa in dom_forensics_raw.form_actions
-        ],
-        has_form_action_mismatch=dom_forensics_raw.has_form_action_mismatch,
-        suspicious_external_scripts=dom_forensics_raw.suspicious_external_scripts,
-        has_iframe_overlay=dom_forensics_raw.has_iframe_overlay,
-        structural_node_diff_ratio=dom_forensics_raw.structural_node_diff_ratio,
-        mitre_attack_id=dom_forensics_raw.mitre_attack_id,
-        forensic_highlights=dom_forensics_raw.forensic_highlights,
-        is_formless_harvesting=dom_forensics_raw.is_formless_harvesting,
-        has_zero_font_obfuscation=dom_forensics_raw.has_zero_font_obfuscation,
-        exfiltration_endpoints=dom_forensics_raw.exfiltration_endpoints,
-        has_shadow_dom_nodes=dom_forensics_raw.has_shadow_dom_nodes
-    )
-
-
-    # Stage 5 & 6: Fusion & Explainability (XGBoost + SHAP)
-    if state.fusion_model is not None:
-        s_phish, shap_contribs, confidence = state.fusion_model.predict(
-            s_lex, s_dom, s_vis,
-            url=cleaned_url,
-            brand_list=state.brand_names,
-            canonical_map=state.canonical_map,
-            lex_features=lex_res
-        )
-    else:
-        s_phish = s_lex
-        shap_contribs = {"s_lex": 1.0, "s_dom": 0.0, "s_vis": 0.0}
-        confidence = "reduced"
-
-    # Stage 7: Phishpedia (USENIX '21) Consistency-Based Identification Model
-    brand_meta_dict = {b["brand_id"]: b for b in state.brands_data}
-    phishpedia_res = evaluate_phishpedia_consistency(
-        url=cleaned_url,
-        matched_brand=matched_brand,
-        visual_similarity=s_vis or 0.0,
-        dom_similarity=s_dom or 0.0,
-        brand_metadata=brand_meta_dict
-    )
-    
-    phishpedia_telemetry = PhishpediaTelemetry(
-        brand_intention=phishpedia_res.brand_intention,
-        brand_display_name=phishpedia_res.brand_display_name,
-        brand_confidence=phishpedia_res.brand_confidence,
-        registered_domain=phishpedia_res.registered_domain,
-        canonical_domains=phishpedia_res.canonical_domains,
-        is_consistent=phishpedia_res.is_consistent,
-        phishing_decision=phishpedia_res.phishing_decision,
-        visual_explanation=phishpedia_res.visual_explanation,
-        mitre_attack_id=phishpedia_res.mitre_attack_id
-    )
-
-    # If Phishpedia consistency rule flags phishing, ensure high threat confidence
-    if phishpedia_res.phishing_decision and not lex_res.is_canonical_domain:
-        s_phish = max(s_phish, 0.85)
-
-    # Stage 8: Recursive Redirect Tracing & URL Shortener Resolution
-    redirect_raw = trace_redirect_hops(cleaned_url)
-    redirect_telemetry = RedirectTraceTelemetry(
-        original_url=redirect_raw.original_url,
-        final_url=redirect_raw.final_url,
-        total_hops=redirect_raw.total_hops,
-        is_multi_hop=redirect_raw.is_multi_hop,
-        is_shortened=redirect_raw.is_shortened,
-        evasion_risk_boost=redirect_raw.evasion_risk_boost
-    )
-
-    # Stage 9: Phishing Kit & C2 Telegram Drop Fingerprinting
-    kit_raw = fingerprint_phishing_kit(
-        html_content=dom_html or "",
-        raw_scripts=dom_forensics_raw.suspicious_external_scripts if dom_forensics_raw else []
-    )
-    kit_telemetry = PhishingKitTelemetry(
-        is_kit_detected=kit_raw.is_kit_detected,
-        kit_name=kit_raw.kit_name,
-        kit_family=kit_raw.kit_family,
-        confidence=kit_raw.confidence,
-        detected_indicators=kit_raw.detected_indicators,
-        is_telegram_exfiltration=kit_raw.is_telegram_exfiltration,
-        telegram_bot_endpoints=kit_raw.telegram_bot_endpoints,
-        mitre_attack_id=kit_raw.mitre_attack_id
-    )
-
-    # Apply Phishing Kit threat elevation
-    if kit_raw.is_kit_detected and not lex_res.is_canonical_domain:
-        s_phish = max(s_phish, 0.90)
-
-    # Apply Multi-hop Evasion boost
-    if redirect_raw.is_multi_hop and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, s_phish + redirect_raw.evasion_risk_boost))
-
-    # Apply AiTM threat elevation boost
-    if aitm_telemetry.is_aitm_suspect:
-        s_phish = min(1.0, max(s_phish, s_phish + aitm_telemetry.risk_score_boost))
-
-    # Apply Quishing threat boost
-    if quishing_telemetry.is_quishing_suspect and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, s_phish + 0.30))
-
-    # Apply Form Action Mismatch boost
-    if dom_forensics.has_form_action_mismatch and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, 0.85))
-
-    # Apply Formless Harvesting boost
-    if dom_forensics.is_formless_harvesting and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, 0.85))
-
-    # Apply Direct Webhook Exfiltration boost
-    if dom_forensics.exfiltration_endpoints and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, 0.90))
-
-    # Apply Zero-Font Obfuscation penalty
-    if dom_forensics.has_zero_font_obfuscation and not lex_res.is_canonical_domain:
-        s_phish = min(1.0, max(s_phish, s_phish + 0.25))
-
-    # Apply Content-Swapping Cloaking boost
-    if semantic_telemetry.discrepancy_type == "CLOAKING_CONTENT_SWAP":
-        s_phish = min(1.0, max(s_phish, 0.85))
-
-
-    # Apply Cloaking fallback guard: If page cloaked and lexical indicates risk, prevent false negative
-    if cloaking_telemetry.is_cloaked and s_lex >= 0.35:
-        s_phish = max(s_phish, s_lex)
-
-    # Canonical Domain Safety Guard
-    if lex_res.is_canonical_domain:
-        s_phish = min(s_phish, 0.05)
-
-    elapsed_ms = round((time.time() - start_time) * 1000, 2)
-
-    return ScanResult(
-        url=cleaned_url,
-        s_lex=s_lex,
-        s_dom=s_dom,
-        s_vis=s_vis,
-        matched_brand=matched_brand,
-        s_phish=s_phish,
-        shap_contributions=shap_contribs,
-        confidence=confidence,
-        screenshot_url=screenshot_rel_url,
-        matched_brand_screenshot_url=matched_brand_screenshot_rel_url,
-        tls_telemetry=tls_telemetry,
-        visual_forensics=visual_forensics,
-        aitm_telemetry=aitm_telemetry,
-        cloaking_telemetry=cloaking_telemetry,
-        quishing_telemetry=quishing_telemetry,
-        semantic_alignment=semantic_telemetry,
-        dom_forensics=dom_forensics,
-        phishpedia_consistency=phishpedia_telemetry,
-        redirect_trace=redirect_telemetry,
-        kit_fingerprint=kit_telemetry,
-        latency_ms=elapsed_ms
-    )
+    pipeline = get_pipeline()
+    return await pipeline.execute(cleaned_url)
 
 
 
@@ -871,6 +509,37 @@ def generate_takedown_endpoint(request: RuleExportRequest):
         body_text=pkg.body_text,
         rfc2142_notice=pkg.rfc2142_notice,
         evidence_summary=pkg.evidence_summary
+    )
+
+@app.post("/export/firewall", response_model=MultiVendorFirewallResponse)
+def export_firewall_rules_endpoint(request: RuleExportRequest):
+    """
+    Generates syntax-exact firewall and WAF block rules across Palo Alto, Cloudflare, Fortinet, Cisco ASA, and Suricata.
+    """
+    fw = generate_multi_vendor_firewall_rules(request.scan_result)
+    return MultiVendorFirewallResponse(
+        target_domain=fw.target_domain,
+        target_ip=fw.target_ip,
+        palo_alto_cli=fw.palo_alto_cli,
+        cloudflare_waf_json=fw.cloudflare_waf_json,
+        fortigate_cli=fw.fortigate_cli,
+        cisco_asa_acl=fw.cisco_asa_acl,
+        suricata_ips_rule=fw.suricata_ips_rule
+    )
+
+@app.post("/export/narrative", response_model=ThreatNarrativeResponse)
+def export_threat_narrative_endpoint(request: RuleExportRequest):
+    """
+    Generates an executive SOC threat intelligence briefing summarizing attacker tradecraft and recommended mitigations.
+    """
+    narrative = generate_threat_narrative(request.scan_result)
+    return ThreatNarrativeResponse(
+        incident_title=narrative.incident_title,
+        severity_level=narrative.severity_level,
+        threat_actor_tradecraft=narrative.threat_actor_tradecraft,
+        executive_summary=narrative.executive_summary,
+        forensic_indicators_of_compromise=narrative.forensic_indicators_of_compromise,
+        recommended_soc_actions=narrative.recommended_soc_actions
     )
 
 

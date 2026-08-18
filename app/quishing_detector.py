@@ -36,12 +36,13 @@ def scan_for_qr_codes(image_bytes: Optional[bytes]) -> QuishingDetectionResult:
         
         # Heuristic 2D pattern inspection: QR position detection patterns (3 concentric squares at corners)
         # Check center and lower third areas common for quishing cards
+        import numpy as np
         resized = pil_img.resize((120, 80))
-        pixels = list(resized.getdata())
+        pixels = np.array(resized, dtype=np.uint8).flatten()
         
         # High contrast localized block detection: QR codes require both dark modules and light background
-        black_count = sum(1 for p in pixels if p < 40)
-        white_count = sum(1 for p in pixels if p > 215)
+        black_count = int(np.sum(pixels < 40))
+        white_count = int(np.sum(pixels > 215))
         total_p = len(pixels)
         
         # QR code requires alternating black and white module distribution

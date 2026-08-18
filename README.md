@@ -1,6 +1,27 @@
-# PhishSentry AI — Multi-Modal Phishing Detector (MVP)
+# PhishSentry AI — Autonomous Multi-Modal Zero-Hour Phishing Detection & Active Triage Engine
 
-PhishSentry AI is a single-URL phishing detector that fuses **Lexical (URL)**, **DOM Structural**, and **Visual Similarity** signals into a unified XGBoost classifier with SHAP-based explainability.
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg)](https://fastapi.tiangolo.com/)
+[![Playwright](https://img.shields.io/badge/Playwright-1.62.0-green.svg)](https://playwright.dev/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B.svg)](https://streamlit.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+**PhishSentry AI (`Pishentry`)** is an enterprise-grade, tri-modal artificial intelligence system designed to detect and mitigate zero-hour phishing attacks before traditional threat feeds and blocklists update. 
+
+Unlike legacy signature-based filters, PhishSentry AI executes an active **Multi-Modal Inspection Pipeline** combining **Lexical Analysis**, **Headless DOM Forensics**, and **Deep Visual Perception (ResNet-50 + dHash)** into a calibrated **XGBoost Classifier** with **TreeSHAP Explainability** and **Automated 1-Click Takedown Generation**.
+
+---
+
+## 🔑 Key Capabilities & USPs
+
+- ⚡ **Zero-Hour Tri-Modal Fusion Engine**: Concurrent execution of Lexical ($S_{lex}$), DOM Structural ($S_{dom}$), and Deep Visual ($S_{vis}$) feature extraction.
+- 🛡️ **Anti-AiTM & Reverse Proxy Detection**: Identifies session-stealing reverse proxies (Evilginx3, Modlishka) bypassing multi-factor authentication (MFA).
+- 🔍 **Formless Theft & Webhook Trap Auditor**: Detects stealthy JavaScript exfiltration targeting Discord webhooks, Telegram bots, or Supabase endpoints without HTML `<form>` tags.
+- 👁️ **Optical Quishing Scanner**: Scans viewport screenshots for embedded QR codes and unmasks hidden optical redirect payloads.
+- 📜 **Phishpedia (USENIX '21) Consistency Engine**: Enforces canonical domain-brand consistency checks to eliminate false positives on legitimate portals.
+- ⚖️ **1-Click RFC 2142 / DMCA Takedown Generator**: Auto-resolves registrar and hosting abuse desks, compiling timestamped evidence into official legal takedown notices.
+- 🧱 **Multi-Vendor Firewall Export**: Automatically formats drop rules for Palo Alto Networks (PAN-OS), Cloudflare WAF, Fortinet FortiGate, Cisco ASA, and Suricata IPS.
+- 🛰️ **OASIS STIX 2.1 Threat Intel Bundling**: Exports standardized STIX 2.1 JSON bundles for SIEM / SOAR platform ingestion.
 
 ---
 
@@ -19,28 +40,21 @@ pip install -r requirements.txt
 playwright install chromium
 ```
 
-### 2. Run Unit Tests (Phases 1–7 Validation)
-```powershell
-pytest -v
-```
-
-### 3. Launch Both Backend & Frontend (Recommended)
+### 2. Launch Unified Services (Backend + Frontend)
 ```powershell
 python start.py
 ```
-This script automatically starts:
-- **FastAPI Backend API**: [http://127.0.0.1:8000](http://127.0.0.1:8000) (Docs at `/docs`)
-- **Streamlit Demo UI**: [http://localhost:8501](http://localhost:8501)
+This launcher automatically initializes:
+- **FastAPI Backend API**: [http://127.0.0.1:8000](http://127.0.0.1:8000) (Interactive OpenAPI Docs at [/docs](http://127.0.0.1:8000/docs))
+- **Streamlit SOC Console UI**: [http://localhost:8501](http://localhost:8501)
 
----
-
-### 4. Build Dataset & Train Fusion Model (Optional Offline Training)
+### 3. Run Automated Playwright E2E Test Suite
 ```powershell
-python -m training.build_dataset
-python -m training.train_fusion_model
+.venv\Scripts\python.exe tests/test_playwright_e2e.py
 ```
+*Validates 27/27 API endpoints and UI tab workflows with Playwright trace recording (`tests/playwright_reports/trace.zip`).*
 
-### 5. Running Services Individually
+### 4. Running Services Individually
 ```powershell
 # Start Backend API only
 uvicorn app.main:app --reload --port 8000
@@ -51,32 +65,45 @@ streamlit run ui/streamlit_app.py
 
 ---
 
-## 🏗️ Architecture & Signal Pipeline
+## 🏗️ Technical Architecture & Pipeline Flow
 
 ```
-URL Input
-   │
-   ├─► Lexical features (Entropy, Levenshtein, Punycode, TLD) ──┐
-   │                                                            │
-   ├─► Playwright Render ─► DOM Tree ─► Tag n-gram similarity   ├─► XGBoost Fusion ─► S_phish + SHAP
-   │                                                            │
-   └─► Screenshot ─► ResNet-50 Embedding ─► Cosine Similarity  ──┘
-       vs. protected_brands.json Reference Set
+                      ┌──────────────────────────────────────┐
+                      │         Candidate Target URL         │
+                      └──────────────────┬───────────────────┘
+                                         │
+         ┌───────────────────────────────┼───────────────────────────────┐
+         ▼                               ▼                               ▼
+┌──────────────────┐           ┌──────────────────┐            ┌──────────────────┐
+│ Lexical Engine   │           │ Playwright DOM   │            │ Headless Capture │
+│ Shannon Entropy  │           │ Tag N-Grams      │            │ ResNet-50 Vector │
+│ Levenshtein Dist │           │ Formless Theft   │            │ Layout dHash     │
+│ Punycode Check   │           │ Zero-Font Filter │            │ Anomaly Heatmap  │
+└────────┬─────────┘           └────────┬─────────┘            └────────┬─────────┘
+         │                              │                               │
+         └──────────────────────────────┼───────────────────────────────┘
+                                        ▼
+                      ┌──────────────────────────────────┐
+                      │ XGBoost Multi-Modal Fusion Model │
+                      │     (19-Dimensional Space)       │
+                      └─────────────────┬────────────────┘
+                                        │
+                ┌───────────────────────┴───────────────────────┐
+                ▼                                               ▼
+ ┌─────────────────────────────┐                 ┌─────────────────────────────┐
+ │  Phishing Score: 0% – 100%  │                 │  Mathematical SHAP Values   │
+ │  Safe | Suspicious | Phish  │                 │  Additive Feature Attribution│
+ └─────────────────────────────┘                 └─────────────────────────────┘
 ```
-
-- **Lexical Module (`app/lexical.py`)**: Pure function, zero network calls. Computes Shannon entropy, min Levenshtein distance to protected brands, homoglyph/punycode checks, and suspicious TLD flags.
-- **Renderer (`app/renderer.py`)**: Headless Playwright browser wrapper with a 10s hard timeout and graceful fallback on timeout/network block (NFR-04).
-- **DOM Similarity (`app/dom_similarity.py`)**: Normalized tag-sequence n-gram overlap (Jaccard similarity) against stored brand snapshots.
-- **Visual Similarity (`app/visual_similarity.py`)**: Pretrained ResNet-50 2048-dim feature embedding with cosine similarity against cached reference brand screenshots.
-- **Fusion & Explainability (`app/fusion.py`)**: Gradient-boosted tree (XGBoost) combining $S_{lex}$, $S_{dom}$, and $S_{vis}$ into $S_{phish} \in [0, 1]$ with SHAP feature contribution breakdown.
 
 ---
 
-## 📁 Clean Repository Structure
+## 📁 Repository Structure
 
 ```text
 Pishentry/
 ├── README.md                           # Enterprise documentation & quickstart
+├── SIH_PRESENTATION_DECK.md            # Official Smart India Hackathon presentation deck
 ├── requirements.txt                    # Python dependencies
 ├── start.py                            # Unified FastAPI + Streamlit launcher
 ├── LICENSE                             # MIT License
@@ -96,6 +123,7 @@ Pishentry/
 │   ├── redirect_tracer.py              # Recursive multi-hop redirect unmasker
 │   ├── kit_fingerprinter.py            # Phishing kit & Telegram drop fingerprinter
 │   ├── takedown_generator.py           # RFC 2142 / DMCA legal takedown notice generator
+│   ├── target_attribution.py           # Multi-modal entity & campaign archetype attribution
 │   ├── fusion.py                       # XGBoost multi-modal fusion & SHAP explainer
 │   ├── export_rules.py                 # OASIS STIX 2.1, Sigma, YARA & DNS generators
 │   ├── telemetry.py                    # TLS & certificate forensics inspector
@@ -104,24 +132,20 @@ Pishentry/
 ├── data/                               # Ground-Truth Brand Assets & Metadata
 │   ├── protected_brands.json           # Protected enterprise brands catalog
 │   └── reference/                      # Canonical screenshots, logos & DOM baselines
+├── playwright-skill/                   # Playwright automation guidance & patterns
 ├── reports/                            # Technical Audit & SOC Analysis Reports
-│   ├── false_positive_analysis_report.md  # False positive RCA & remediation report
-│   ├── PhishSentry_10X_Full_System_Performance_Audit.md # 10X system audit
-│   ├── PhishSentry_10X_SOC_Testing_Report.html           # Interactive SOC test report
-│   ├── PhishSentry_10X_SOC_Testing_Report.pdf            # PDF executive report
-│   └── Cybersecurity_Skills_Audit_Report.html            # Skills compliance audit
 ├── scripts/                            # Utility & Maintenance Scripts
-│   ├── generate_10x_pdf_report.py      # Automated PDF report compiler
-│   └── add_antigravity_skill.py        # Antigravity skill registrar
-├── skills/                             # Antigravity Cybersecurity Skills
-├── tests/                              # Pytest Regression & Integration Suite (65/65 Passing)
+├── tests/                              # Pytest Unit & Playwright E2E Test Suite (27/27 Passing)
 ├── training/                           # Dataset Pipelines & Machine Learning Artifacts
 │   ├── build_dataset.py                # Dataset builder
 │   ├── train_fusion_model.py           # Training pipeline & evaluation metrics
-│   ├── dataset.json                    # Synthetic & real-world training samples
 │   └── model.pkl                       # Trained XGBoost model artifact
 └── ui/                                 # Streamlit Enterprise SOC Triage Console
     └── streamlit_app.py                # Real-time multi-tab triage dashboard
 ```
 
+---
 
+## 📜 License & Security Boundary
+
+This project is licensed under the **MIT License**. Intended for defensive security operations, threat hunting, and testing applications you own or have explicit authorization to test.
