@@ -113,6 +113,10 @@ class FusionClassifier:
             s_dom_val = float(s_dom)
             s_vis_val = float(s_vis)
 
+        # If no visual or DOM brand similarity is present, score cleanly follows lexical probability
+        if s_dom_val == 0.0 and s_vis_val == 0.0:
+            return round(s_lex, 4), {"s_lex": 1.0, "s_dom": 0.0, "s_vis": 0.0}, confidence
+
         max_sim = max(s_dom_val, s_vis_val)
         features = np.array([[s_lex, s_dom_val, s_vis_val, visual_unavailable, max_sim]], dtype=np.float32)
 
@@ -124,31 +128,47 @@ class FusionClassifier:
             shap_dict = {"s_lex": 0.33, "s_dom": 0.33, "s_vis": 0.34}
             if self.explainer is not None:
                 try:
-                    shap_vals = self.explainer.shap_values(features)
-                    if isinstance(shap_vals, list):
-                        sv = shap_vals[1][0] if len(shap_vals) > 1 else shap_vals[0][0]
-                    else:
-                        sv = shap_vals[0]
+                    raw_shap = self.explainer.shap_values(features)
                     
-                    # Normalize SHAP contributions to sum to 1.0 for UI display
-                    abs_vals = np.abs(sv[:3])
-                    total = np.sum(abs_vals)
-                    if total > 0:
-                        shap_dict = {
-                            "s_lex": round(float(abs_vals[0] / total), 4),
-                            "s_dom": round(float(abs_vals[1] / total), 4),
-                            "s_vis": round(float(abs_vals[2] / total), 4)
-                        }
+                    # Robust extraction across SHAP versions & types
+                    if hasattr(raw_shap, "values"):
+                        sv = raw_shap.values
                     else:
-                        shap_dict = {"s_lex": round(s_lex / (s_lex + s_dom_val + s_vis_val + 1e-5), 4),
-                                     "s_dom": round(s_dom_val / (s_lex + s_dom_val + s_vis_val + 1e-5), 4),
-                                     "s_vis": round(s_vis_val / (s_lex + s_dom_val + s_vis_val + 1e-5), 4)}
+                        sv = raw_shap
+
+                    if isinstance(sv, list):
+                        sv_arr = sv[1] if len(sv) > 1 else sv[0]
+                    else:
+                        sv_arr = sv
+
+                    # Ensure sv_arr is 1D vector of length 5
+                    sv_1d = np.array(sv_arr).reshape(-1)
+                    if len(sv_1d) >= 3:
+                        abs_vals = np.abs(sv_1d[:3])
+                        total = np.sum(abs_vals)
+                        if total > 1e-6:
+                            shap_dict = {
+                                "s_lex": round(float(abs_vals[0] / total), 4),
+                                "s_dom": round(float(abs_vals[1] / total), 4),
+                                "s_vis": round(float(abs_vals[2] / total), 4)
+                            }
+                        else:
+                            shap_dict = {"s_lex": 0.4, "s_dom": 0.3, "s_vis": 0.3}
                 except Exception as e:
-                    logger.warning(f"SHAP explanation computation failed: {e}")
+                    logger.warning(f"SHAP explanation computation fallback: {e}")
+                    # Proportional fallback
+                    denom = s_lex + s_dom_val + s_vis_val + 1e-5
+                    shap_dict = {
+                        "s_lex": round(float(s_lex / denom), 4),
+                        "s_dom": round(float(s_dom_val / denom), 4),
+                        "s_vis": round(float(s_vis_val / denom), 4)
+                    }
 
             return round(s_phish, 4), shap_dict, confidence
+
         else:
             # Fallback heuristic if XGBoost model is missing
             s_phish = 0.5 * s_lex + 0.3 * s_vis_val + 0.2 * s_dom_val
             shap_dict = {"s_lex": 0.5, "s_dom": 0.2, "s_vis": 0.3}
             return round(s_phish, 4), shap_dict, confidence
+

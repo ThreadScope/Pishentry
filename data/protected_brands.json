@@ -2,64 +2,130 @@
   {
     "brand_id": "paypal",
     "display_name": "PayPal",
-    "canonical_domains": ["paypal.com", "www.paypal.com"],
+    "official_login_url": "https://www.paypal.com/signin",
+    "canonical_domains": [
+      "paypal.com",
+      "www.paypal.com"
+    ],
+    "brand_color": "#003087",
+    "official_cert_issuer": "DigiCert Global Root CA (DigiCert Inc)",
+    "security_advice": "Legitimate PayPal portals operate strictly under *.paypal.com with EV/OV DigiCert TLS certificates and never ask for account credentials via IP addresses or dynamic TLDs.",
     "screenshot_path": "data/reference/paypal/screenshot.png",
     "logo_path": "data/reference/paypal/logo.png",
     "dom_snapshot_path": "data/reference/paypal/dom.html",
-    "embedding_cache_id": "paypal_v1"
+    "embedding_cache_id": "paypal_v2"
   },
   {
     "brand_id": "google",
     "display_name": "Google",
-    "canonical_domains": ["google.com", "accounts.google.com"],
+    "official_login_url": "https://accounts.google.com",
+    "canonical_domains": [
+      "google.com",
+      "accounts.google.com"
+    ],
+    "brand_color": "#4285F4",
+    "official_cert_issuer": "Google Trust Services LLC (GTS CA 1C3)",
+    "security_advice": "Google Account authentication is exclusively hosted at accounts.google.com signed by Google Trust Services CA. Look for FIDO2/WebAuthn prompts.",
     "screenshot_path": "data/reference/google/screenshot.png",
     "logo_path": "data/reference/google/logo.png",
     "dom_snapshot_path": "data/reference/google/dom.html",
-    "embedding_cache_id": "google_v1"
+    "embedding_cache_id": "google_v2"
   },
   {
     "brand_id": "github",
     "display_name": "GitHub",
-    "canonical_domains": ["github.com"],
+    "official_login_url": "https://github.com/login",
+    "canonical_domains": [
+      "github.com"
+    ],
+    "brand_color": "#24292E",
+    "official_cert_issuer": "DigiCert TLS Hybrid ECC SHA384 2020 CA1",
+    "security_advice": "Authentic GitHub sessions reside solely on github.com. All official login forms support hardware security keys and multi-factor 2FA natively.",
     "screenshot_path": "data/reference/github/screenshot.png",
     "logo_path": "data/reference/github/logo.png",
     "dom_snapshot_path": "data/reference/github/dom.html",
-    "embedding_cache_id": "github_v1"
+    "embedding_cache_id": "github_v2"
   },
   {
     "brand_id": "microsoft",
-    "display_name": "Microsoft / Office365",
-    "canonical_domains": ["microsoft.com", "office.com", "login.microsoftonline.com"],
+    "display_name": "Microsoft / Office 365",
+    "official_login_url": "https://login.microsoftonline.com",
+    "canonical_domains": [
+      "microsoft.com",
+      "office.com",
+      "login.microsoftonline.com",
+      "live.com"
+    ],
+    "brand_color": "#00A4EF",
+    "official_cert_issuer": "Microsoft Azure TLS Issuing CA / DigiCert",
+    "security_advice": "Enterprise Microsoft 365 credentials should only ever be inputted on login.microsoftonline.com or verified corporate ADFS federation endpoints.",
     "screenshot_path": "data/reference/microsoft/screenshot.png",
     "logo_path": "data/reference/microsoft/logo.png",
     "dom_snapshot_path": "data/reference/microsoft/dom.html",
-    "embedding_cache_id": "microsoft_v1"
+    "embedding_cache_id": "microsoft_v2"
   },
   {
     "brand_id": "bankofamerica",
     "display_name": "Bank of America",
-    "canonical_domains": ["bankofamerica.com"],
+    "official_login_url": "https://www.bankofamerica.com",
+    "canonical_domains": [
+      "bankofamerica.com",
+      "www.bankofamerica.com"
+    ],
+    "brand_color": "#012169",
+    "official_cert_issuer": "Entrust Certificate Authority / DigiCert Inc",
+    "security_advice": "Bank of America banking portals enforce Extended Validation (EV) certificates and will never request your Online Banking Passcode or Debit Card PIN via email links.",
     "screenshot_path": "data/reference/bankofamerica/screenshot.png",
     "logo_path": "data/reference/bankofamerica/logo.png",
     "dom_snapshot_path": "data/reference/bankofamerica/dom.html",
-    "embedding_cache_id": "bankofamerica_v1"
+    "embedding_cache_id": "bankofamerica_v2"
   },
   {
     "brand_id": "chase",
     "display_name": "Chase Bank",
-    "canonical_domains": ["chase.com"],
+    "official_login_url": "https://www.chase.com",
+    "canonical_domains": [
+      "chase.com",
+      "www.chase.com"
+    ],
+    "brand_color": "#117ACA",
+    "official_cert_issuer": "DigiCert High Assurance TLS CA",
+    "security_advice": "Chase online banking requires secure HTTPS on chase.com. Verify the security padlock and ensure the URL does not contain typosquats.",
     "screenshot_path": "data/reference/chase/screenshot.png",
     "logo_path": "data/reference/chase/logo.png",
     "dom_snapshot_path": "data/reference/chase/dom.html",
-    "embedding_cache_id": "chase_v1"
+    "embedding_cache_id": "chase_v2"
   },
   {
     "brand_id": "dhl",
     "display_name": "DHL Express",
-    "canonical_domains": ["dhl.com"],
+    "official_login_url": "https://mydhl.express.dhl",
+    "canonical_domains": [
+      "dhl.com",
+      "express.dhl",
+      "mydhl.express.dhl"
+    ],
+    "brand_color": "#FFCC00",
+    "official_cert_issuer": "Deutsche Telekom Security GmbH / DigiCert",
+    "security_advice": "DHL Express tracking notifications always direct customers to *.dhl.com or *.express.dhl. Never enter payment details on unfamiliar tracking links.",
     "screenshot_path": "data/reference/dhl/screenshot.png",
     "logo_path": "data/reference/dhl/logo.png",
     "dom_snapshot_path": "data/reference/dhl/dom.html",
-    "embedding_cache_id": "dhl_v1"
+    "embedding_cache_id": "dhl_v2"
+  },
+  {
+    "brand_id": "paypay login",
+    "display_name": "info",
+    "official_login_url": "https://www.paypal.com/in/welcome/signup/#/login_info",
+    "canonical_domains": [
+      "https://www.paypal.com/in/welcome/signup/#/login_info"
+    ],
+    "brand_color": "#007dc1",
+    "official_cert_issuer": "DigiCert / Corporate CA",
+    "security_advice": "Verify organization subdomain before entering credentials.",
+    "screenshot_path": "data/reference/paypay login/screenshot.png",
+    "logo_path": "data/reference/paypay login/logo.png",
+    "dom_snapshot_path": "data/reference/paypay login/dom.html",
+    "embedding_cache_id": "paypay login_custom_v1"
   }
 ]

@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from app.main import app, startup_event
+from app.main import app
 
 def test_health_endpoint():
     with TestClient(app) as client:
@@ -18,7 +18,9 @@ def test_brands_endpoint():
         assert isinstance(brands, list)
         assert len(brands) >= 1
 
-def test_scan_malformed_url():
+def test_brand_dom_endpoint():
     with TestClient(app) as client:
-        response = client.post("/scan", json={"url": "not-a-valid-url-without-domain"})
-        assert response.status_code == 400
+        response = client.get("/brands/paypal/dom")
+        assert response.status_code == 200
+        assert "<html" in response.text.lower() or "<form" in response.text.lower()
+

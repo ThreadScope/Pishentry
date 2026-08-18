@@ -72,32 +72,56 @@ URL Input
 
 ---
 
-## 📁 Repository Structure
+## 📁 Clean Repository Structure
 
+```text
+Pishentry/
+├── README.md                           # Enterprise documentation & quickstart
+├── requirements.txt                    # Python dependencies
+├── start.py                            # Unified FastAPI + Streamlit launcher
+├── LICENSE                             # MIT License
+├── app/                                # Core Engine Backend (FastAPI)
+│   ├── main.py                         # FastAPI orchestration & endpoints
+│   ├── lexical.py                      # Lexical entropy & typosquat detection
+│   ├── renderer.py                     # Headless Playwright & Shadow DOM unroller
+│   ├── dom_visibility.py               # Anti-Zero-Font & CSS visibility filter
+│   ├── dom_similarity.py               # DOM semantic brand token engine
+│   ├── dom_comparator.py               # Formless theft & webhook drop auditor
+│   ├── visual_similarity.py            # ResNet-50 + layout dHash matching
+│   ├── visual_forensics.py             # Visual anomaly difference heatmap generator
+│   ├── phishpedia_engine.py            # USENIX '21 domain-brand consistency model
+│   ├── aitm_detector.py                # Reverse-proxy AiTM cloaking detector
+│   ├── cloaking_detector.py            # Cloudflare / Bot-wall bypass analyzer
+│   ├── quishing_detector.py            # QR code payload decoder & quishing analyzer
+│   ├── redirect_tracer.py              # Recursive multi-hop redirect unmasker
+│   ├── kit_fingerprinter.py            # Phishing kit & Telegram drop fingerprinter
+│   ├── takedown_generator.py           # RFC 2142 / DMCA legal takedown notice generator
+│   ├── fusion.py                       # XGBoost multi-modal fusion & SHAP explainer
+│   ├── export_rules.py                 # OASIS STIX 2.1, Sigma, YARA & DNS generators
+│   ├── telemetry.py                    # TLS & certificate forensics inspector
+│   ├── webhook.py                      # Real-time SIEM/SOAR incident webhook dispatcher
+│   └── schemas.py                      # Pydantic data schemas
+├── data/                               # Ground-Truth Brand Assets & Metadata
+│   ├── protected_brands.json           # Protected enterprise brands catalog
+│   └── reference/                      # Canonical screenshots, logos & DOM baselines
+├── reports/                            # Technical Audit & SOC Analysis Reports
+│   ├── false_positive_analysis_report.md  # False positive RCA & remediation report
+│   ├── PhishSentry_10X_Full_System_Performance_Audit.md # 10X system audit
+│   ├── PhishSentry_10X_SOC_Testing_Report.html           # Interactive SOC test report
+│   ├── PhishSentry_10X_SOC_Testing_Report.pdf            # PDF executive report
+│   └── Cybersecurity_Skills_Audit_Report.html            # Skills compliance audit
+├── scripts/                            # Utility & Maintenance Scripts
+│   ├── generate_10x_pdf_report.py      # Automated PDF report compiler
+│   └── add_antigravity_skill.py        # Antigravity skill registrar
+├── skills/                             # Antigravity Cybersecurity Skills
+├── tests/                              # Pytest Regression & Integration Suite (65/65 Passing)
+├── training/                           # Dataset Pipelines & Machine Learning Artifacts
+│   ├── build_dataset.py                # Dataset builder
+│   ├── train_fusion_model.py           # Training pipeline & evaluation metrics
+│   ├── dataset.json                    # Synthetic & real-world training samples
+│   └── model.pkl                       # Trained XGBoost model artifact
+└── ui/                                 # Streamlit Enterprise SOC Triage Console
+    └── streamlit_app.py                # Real-time multi-tab triage dashboard
 ```
-phishsentry/
-├── README.md
-├── requirements.txt
-├── PhishSentry_AI_BUILD_INSTRUCTIONS.md
-├── PhishSentry_AI_MVP_PRD.md
-├── PhishSentry_AI_MVP_SRS.md
-├── PhishSentry_AI_System_Design.md
-├── app/
-│   ├── main.py                 # FastAPI application
-│   ├── lexical.py              # Phase 1 lexical analyzer
-│   ├── renderer.py             # Phase 3 Playwright renderer
-│   ├── dom_similarity.py       # Phase 4 DOM n-gram similarity
-│   ├── visual_similarity.py    # Phase 5 ResNet visual embedding
-│   ├── fusion.py                # Phase 6 XGBoost fusion + SHAP
-│   └── schemas.py               # Pydantic data schemas
-├── data/
-│   ├── protected_brands.json   # Ground-truth reference brand store
-│   └── reference/              # Canonical screenshots, logos & DOMs
-├── training/
-│   ├── build_dataset.py        # Dataset builder
-│   ├── train_fusion_model.py   # Training script & held-out eval
-│   └── model.pkl               # Saved XGBoost artifact
-├── tests/                      # Pytest unit & integration tests
-└── ui/
-    └── streamlit_app.py        # Streamlit demo dashboard
-```
+
+

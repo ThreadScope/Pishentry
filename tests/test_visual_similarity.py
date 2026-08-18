@@ -43,3 +43,13 @@ def test_visual_store_matching():
     score, matched = store.find_best_match(img_paypal)
     assert matched == "paypal"
     assert pytest.approx(score, 0.01) == 1.0
+
+def test_corrupt_image_safety():
+    embedder = VisualEmbedder()
+    emb_empty = embedder.get_image_embedding(b"")
+    assert isinstance(emb_empty, np.ndarray)
+    emb_corrupt = embedder.get_image_embedding(b"not-an-image-data-header")
+    assert isinstance(emb_corrupt, np.ndarray)
+    sim = compute_cosine_similarity(emb_empty, emb_corrupt)
+    assert sim == 0.0
+

@@ -17,18 +17,36 @@ def extract_sample_features(url: str, label: int):
     
     # Structural & Visual feature simulation for dataset training split
     if label == 1:
-        # Phishing sample: high visual/DOM similarity to spoofed brand
-        s_dom = float(np.random.uniform(0.55, 0.95))
-        s_vis = float(np.random.uniform(0.60, 0.98))
-        visual_unavail = 0
+        # Phishing sample variants:
+        scenario = np.random.choice(["multimodal", "stealthy_visual", "unrendered_lexical"], p=[0.60, 0.20, 0.20])
+        if scenario == "multimodal":
+            s_dom = float(np.random.uniform(0.55, 0.95))
+            s_vis = float(np.random.uniform(0.60, 0.98))
+            visual_unavail = 0
+        elif scenario == "stealthy_visual":
+            s_dom = float(np.random.uniform(0.70, 0.95))
+            s_vis = float(np.random.uniform(0.75, 0.98))
+            visual_unavail = 0
+        else: # unrendered_lexical
+            s_dom = 0.0
+            s_vis = 0.0
+            visual_unavail = 1
     else:
-        # Legitimate sample: low similarity to UNRELATED protected brands
-        s_dom = float(np.random.uniform(0.0, 0.35))
-        s_vis = float(np.random.uniform(0.0, 0.35))
-        visual_unavail = 0
+        # Legitimate sample variants:
+        if lex.is_canonical_domain:
+            # Official canonical portals (e.g. accounts.google.com)
+            s_dom = float(np.random.uniform(0.0, 0.25))
+            s_vis = float(np.random.uniform(0.0, 0.25))
+            visual_unavail = 0
+        else:
+            # Benign general websites (e.g. httpbin.org, wikipedia.org)
+            s_dom = 0.0
+            s_vis = 0.0
+            visual_unavail = 0
 
     max_sim = max(s_dom, s_vis)
     return [s_lex, s_dom, s_vis, visual_unavail, max_sim]
+
 
 def train_and_eval():
     os.makedirs("training", exist_ok=True)
