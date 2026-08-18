@@ -26,8 +26,8 @@ def test_feature_vector_dimension():
         s_dom=0.80,
         s_vis=0.90
     )
-    assert len(vec) == 19
-    assert len(FEATURE_NAMES) == 19
+    assert len(vec) == 23
+    assert len(FEATURE_NAMES) == 23
     assert unavail == 0
     assert conf == "full"
 

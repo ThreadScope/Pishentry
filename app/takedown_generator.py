@@ -1,18 +1,23 @@
 """
 app/takedown_generator.py
-=========================
-Automated Abuse Takedown Notice & Legal Notice Generator (RFC 2142 & DMCA Compliant).
+==========================
+Autonomous Phishing Takedown & Cryptographic Evidence Package Generator.
 
-Generates ready-to-send abuse takedown packages for Registrars (Namecheap, GoDaddy, Cloudflare, etc.)
-and Hosting ASNs (AWS, DigitalOcean, Linode) complete with forensic IOCs, timestamps, and Phishpedia evidence.
+Features:
+- Generates standardized RFC-compliant abuse notification emails for domain registrars, DNS providers, and web hosts
+- Builds cryptographic SHA-256 evidence digests including scan timestamps, IP addresses, form exfiltration targets, and MITRE ATT&CK techniques
+- Produces automated SOC abuse reports for 1-click takedown dispatch
 """
 
-import urllib.parse
-from datetime import datetime, timezone
-from typing import Dict, Any, List
-from pydantic import BaseModel, Field
+import time
+import hashlib
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass, asdict
+import tldextract
 
-class AbuseTakedownPackage(BaseModel):
+
+@dataclass
+class TakedownPackageLegacy:
     target_url: str
     target_domain: str
     registrar_abuse_email: str
@@ -21,114 +26,207 @@ class AbuseTakedownPackage(BaseModel):
     body_text: str
     rfc2142_notice: str
     evidence_summary: Dict[str, Any]
+    recommended_actions: List[str]
+    evidence_digest_sha256: str
+
+
+@dataclass
+class TakedownPackage:
+    report_id: str
+    target_url: str
+    impersonated_brand: str
+    risk_score: float
+    detection_timestamp: str
+    registrar_abuse_email: str
+    hosting_provider_abuse_email: str
+    mitre_attack_techniques: List[Dict[str, str]]
+    evidence_digest_sha256: str
+    abuse_email_subject: str
+    abuse_email_body: str
+    recommended_actions: List[str]
+
 
 def resolve_mock_abuse_contacts(domain: str) -> Dict[str, str]:
-    """
-    Resolves registrar and hosting abuse contacts based on domain TLD/suffix.
-    """
-    clean = domain.lower().strip()
-    if clean.endswith(".tk") or clean.endswith(".ml") or clean.endswith(".ga") or clean.endswith(".cf") or clean.endswith(".gq"):
-        return {
-            "registrar": "abuse@freenom.com",
-            "hosting": "abuse-reports@cloudflare.com",
-            "registrar_name": "Freenom / OpenTLD"
-        }
-    elif clean.endswith(".xyz") or clean.endswith(".top") or clean.endswith(".buzz") or clean.endswith(".site"):
-        return {
-            "registrar": "abuse@namecheap.com",
-            "hosting": "abuse@digitalocean.com",
-            "registrar_name": "Namecheap Inc."
-        }
-    elif clean.endswith(".ru") or clean.endswith(".su"):
-        return {
-            "registrar": "abuse@reg.ru",
-            "hosting": "abuse@selectel.ru",
-            "registrar_name": "REG.RU LLC"
-        }
+    """Resolves registrar and hosting abuse contact emails for a given domain."""
+    ext = tldextract.extract(domain)
+    tld = ext.suffix.lower()
+    
+    if tld in ["xyz", "top", "buzz", "site", "online"]:
+        reg_email = "abuse@namecheap.com, abuse@nic.xyz"
+    elif tld in ["tk", "ml", "ga", "cf", "gq"]:
+        reg_email = "abuse@freenom.com"
     else:
-        return {
-            "registrar": f"abuse@{clean.split('.')[-2]}.{clean.split('.')[-1]}" if len(clean.split('.')) >= 2 else "abuse@iana.org",
-            "hosting": "abuse-desk@hosting-provider.net",
-            "registrar_name": "Public Domain Registrar"
-        }
+        reg_email = "abuse@registrar-servers.com"
 
-def generate_abuse_takedown_package(scan_result: Dict[str, Any]) -> AbuseTakedownPackage:
+    return {
+        "registrar_abuse_email": reg_email,
+        "hosting_abuse_email": "abuse-team@hosting-provider.net"
+    }
+
+
+def generate_abuse_takedown_package(scan_data: Any) -> TakedownPackageLegacy:
     """
-    Constructs a formal, legal-grade abuse takedown letter ready to submit to registrars and hosting CERTs.
+    Generates legacy TakedownPackage format for dictionary or ScanResult input.
     """
-    url = scan_result.get("url", "")
-    parsed = urllib.parse.urlparse(url)
-    hostname = (parsed.netloc or parsed.path).split(":")[0].lower()
+    if hasattr(scan_data, "model_dump"):
+        data = scan_data.model_dump()
+    elif isinstance(scan_data, dict):
+        data = scan_data
+    else:
+        data = getattr(scan_data, "__dict__", {})
+
+    url = data.get("url", "")
+    ext = tldextract.extract(url)
+    target_domain = ext.top_domain_under_public_suffix or url.replace("https://", "").replace("http://", "").split("/")[0]
     
-    brand = (scan_result.get("matched_brand") or "Enterprise Organization").upper()
-    phishpedia = scan_result.get("phishpedia_consistency") or {}
-    tls_info = scan_result.get("tls_telemetry") or {}
+    matched_brand = data.get("matched_brand") or "Protected Entity"
+    phishpedia = data.get("phishpedia_consistency") or {}
+    brand_name = phishpedia.get("brand_display_name") or matched_brand.capitalize()
+    canonical_domains = phishpedia.get("canonical_domains") or [f"{matched_brand.lower()}.com"]
+    canonical_str = ", ".join(canonical_domains)
+
+    tls = data.get("tls_telemetry") or {}
+    resolved_ip = tls.get("resolved_ip", "Pending DNS Resolution")
+
+    contacts = resolve_mock_abuse_contacts(target_domain)
     
-    abuse_contacts = resolve_mock_abuse_contacts(hostname)
-    reg_email = abuse_contacts["registrar"]
-    host_email = abuse_contacts["hosting"]
-    reg_name = abuse_contacts["registrar_name"]
-    
-    now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    
-    subject = f"[URGENT ABUSE TAKEDOWN] Active Phishing & Brand Impersonation: {hostname}"
-    
-    body = f"""To: Abuse Response Desk ({reg_name}) <{reg_email}>, Hosting CERT <{host_email}>
-From: Enterprise Security Operations Center (CloneCatcher AI)
-Date: {now_utc}
-Subject: {subject}
+    timestamp = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    raw_evidence = f"{url}|{target_domain}|{resolved_ip}|{timestamp}"
+    evidence_hash = hashlib.sha256(raw_evidence.encode("utf-8")).hexdigest()
 
-Dear Abuse & Compliance Team,
+    subject_line = f"[URGENT ABUSE TAKEDOWN] Malicious Phishing Attack Impersonating {brand_name} on {target_domain}"
 
-We are writing to officially report an active, unauthorized credential harvesting and phishing website hosted on your network/registry targeting '{brand}'.
+    body_text = f"""Dear Abuse Team,
 
-======================================================================
-1. INFRINGING TARGET & INCIDENT SUMMARY
-======================================================================
-- Infringing URL: {url}
-- Domain / Hostname: {hostname}
-- Targeted Brand Identity: {brand}
-- Incident Timestamp: {now_utc}
-- Phishing Detection Probability: {scan_result.get('s_phish', 0.95)*100:.1f}%
+CloneCatcher AI has detected active credential phishing hosted on your network infrastructure.
 
-======================================================================
-2. FORENSIC EVIDENCE (USENIX Security '21 Phishpedia Model)
-======================================================================
-- Visual Brand Intention Match: {phishpedia.get('brand_display_name', brand)} (Confidence: {phishpedia.get('brand_confidence', 0.9)*100:.1f}%)
-- Canonical Domain Set: {', '.join(phishpedia.get('canonical_domains', [brand.lower() + '.com']))}
-- Registered Host Discrepancy: '{hostname}' is NOT authorized by or affiliated with {brand}.
-- Technical Telemetry: {phishpedia.get('visual_explanation', 'Direct visual and structural impersonation.')}
-- TLS Certificate Issuer: {tls_info.get('issuer', 'Self-Signed / Untrusted')}
-- Resolved IP Address: {tls_info.get('resolved_ip', 'N/A')}
+Incident Telemetry:
+- Target Domain: {target_domain}
+- Full URL: {url}
+- Host IP: {resolved_ip}
+- Impersonated Brand: {brand_name} (Official Domain: {canonical_str})
+- Detection Timestamp: {timestamp}
+- Cryptographic Checksum: {evidence_hash}
 
-======================================================================
-3. ACTION REQUESTED
-======================================================================
-Pursuant to ICANN Registrar Accreditation Agreement and Hosting Acceptable Use Policies (AUP), we urgently request that you:
-1. Immediately suspend DNS resolution and place the domain on 'serverHold' / 'clientHold' status.
-2. Terminate upstream hosting routes for IP {tls_info.get('resolved_ip', 'N/A')} associated with this campaign.
-3. Preserve all access logs, registration account details, and payment records for law enforcement coordination.
-
-Please confirm receipt of this notice and provide a tracking/ticket number upon resolution.
+Pursuant to your Acceptable Use Policy, please terminate hosting and suspend domain resolution immediately to prevent victim credential theft.
 
 Sincerely,
-Enterprise Incident Response & Brand Protection Team
-Generated by CloneCatcher AI Security System
+CloneCatcher AI Cyber Defense Team
 """
 
-    return AbuseTakedownPackage(
+    rfc2142 = f"abuse@{target_domain}, security@{target_domain}, postmaster@{target_domain}"
+    evidence_summary = {
+        "url": url,
+        "domain": target_domain,
+        "resolved_ip": resolved_ip,
+        "matched_brand": matched_brand,
+        "sha256": evidence_hash
+    }
+
+    return TakedownPackageLegacy(
         target_url=url,
-        target_domain=hostname,
-        registrar_abuse_email=reg_email,
-        hosting_abuse_email=host_email,
-        subject_line=subject,
-        body_text=body.strip(),
-        rfc2142_notice=f"RFC 2142 destination: mailto:{reg_email}?subject={urllib.parse.quote(subject)}",
-        evidence_summary={
-            "timestamp_utc": now_utc,
-            "resolved_ip": tls_info.get("resolved_ip"),
-            "cert_issuer": tls_info.get("issuer"),
-            "targeted_brand": brand,
-            "threat_score": scan_result.get("s_phish")
-        }
+        target_domain=target_domain,
+        registrar_abuse_email=contacts["registrar_abuse_email"],
+        hosting_abuse_email=contacts["hosting_abuse_email"],
+        subject_line=subject_line,
+        body_text=body_text,
+        rfc2142_notice=rfc2142,
+        evidence_summary=evidence_summary,
+        recommended_actions=[
+            "Send takedown request to registrar abuse desk",
+            "Submit URL to global threat intelligence feeds (Google Safe Browsing, PhishTank)",
+            "Deploy DNS sinkhole policy across corporate gateway"
+        ],
+        evidence_digest_sha256=evidence_hash
     )
+
+
+def generate_takedown_package(
+    url: str,
+    brand_id: str,
+    risk_score: float = 0.95,
+    s_lex: float = 0.0,
+    s_dom: float = 0.0,
+    s_vis: float = 0.0,
+    ip_address: Optional[str] = None,
+    form_action: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Assembles a complete cryptographic takedown evidence package and abuse report.
+    """
+    clean_brand = (brand_id or "Enterprise Brand").capitalize()
+    timestamp_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    
+    raw_evidence = f"{url}|{brand_id}|{risk_score}|{s_lex}|{s_dom}|{s_vis}|{timestamp_str}"
+    evidence_hash = hashlib.sha256(raw_evidence.encode("utf-8")).hexdigest()
+    report_id = f"PS-TKD-{evidence_hash[:12].upper()}"
+
+    ext = tldextract.extract(url)
+    domain = ext.top_domain_under_public_suffix or url
+    contacts = resolve_mock_abuse_contacts(domain)
+
+    mitre_techniques = [
+        {"id": "T1566.002", "name": "Phishing: Spearphishing Link", "tactic": "Initial Access"},
+        {"id": "T1656", "name": "Impersonation", "tactic": "Defense Evasion"},
+        {"id": "T1056.001", "name": "Input Capture: Keylogging / Credential Theft", "tactic": "Collection"}
+    ]
+
+    abuse_subject = f"[URGENT ABUSE REPORT] Phishing Website Impersonating {clean_brand} ({url})"
+    
+    abuse_body = f"""Dear Abuse Team,
+
+This is an automated high-priority abuse notification from Pishentry Multi-Modal AI Threat Intelligence.
+
+We have detected an active credential phishing attack hosted on your infrastructure that illicitly impersonates {clean_brand}.
+
+=== ATTACK TELEMETRY & EVIDENCE ===
+Report ID: {report_id}
+Malicious URL: {url}
+Targeted Brand: {clean_brand}
+Composite AI Phishing Confidence: {risk_score * 100:.1f}%
+- Lexical Risk (S_lex): {s_lex:.2f}
+- DOM Structural Similarity (S_dom): {s_dom:.2f}
+- Visual Perceptual Similarity (S_vis): {s_vis:.2f}
+Timestamp (UTC): {timestamp_str}
+Host IP: {ip_address or 'Pending DNS Resolution'}
+Exfiltration Form Target: {form_action or 'Direct In-Line Capture'}
+Cryptographic Evidence Digest (SHA-256): {evidence_hash}
+
+=== MITRE ATT&CK MAPPINGS ===
+- T1566.002: Phishing: Spearphishing Link
+- T1656: Impersonation of {clean_brand}
+- T1056.001: Credential Form Theft
+
+=== REQUESTED ACTION ===
+Pursuant to your Acceptable Use Policy and international anti-phishing guidelines, we urgently request that you:
+1. Immediately suspend DNS resolution / hosting for this malicious resource.
+2. Preserve server access logs for law enforcement forensic coordination.
+3. Block subsequent lookalike registrations under this domain cluster.
+
+Thank you for your prompt cooperation in protecting internet users from credential theft.
+
+Sincerely,
+Pishentry Cyber Threat Intelligence Unit
+https://pishentry.security
+"""
+
+    package = TakedownPackage(
+        report_id=report_id,
+        target_url=url,
+        impersonated_brand=clean_brand,
+        risk_score=round(risk_score, 4),
+        detection_timestamp=timestamp_str,
+        registrar_abuse_email=contacts["registrar_abuse_email"],
+        hosting_provider_abuse_email=contacts["hosting_abuse_email"],
+        mitre_attack_techniques=mitre_techniques,
+        evidence_digest_sha256=evidence_hash,
+        abuse_email_subject=abuse_subject,
+        abuse_email_body=abuse_body,
+        recommended_actions=[
+            "Submit abuse notification email to registrar and hosting provider",
+            "Report malicious URL to Google Safe Browsing and Microsoft SmartScreen",
+            "Deploy local firewall and DNS sinkhole rules to protect corporate endpoints",
+            "Preserve cryptographic evidence package for incident response documentation"
+        ]
+    )
+    return asdict(package)

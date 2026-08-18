@@ -58,6 +58,7 @@ from app.iscx_features import ISCXModelEnsemble
 from app.stackmodel_features import extract_stackmodel_23_features
 from app.phishzoo_tokenizer import analyze_content_brand_match
 from app.header_analyzer import analyze_http_headers
+from app.fastflux_tracker import evaluate_fastflux_dns_risk
 
 logger = logging.getLogger("phishsentry.pipeline")
 
@@ -94,6 +95,7 @@ class PipelineContext:
     quishing_telemetry: Optional[QuishingTelemetry] = None
     visual_ocr_telemetry: Optional[VisualOCRTelemetry] = None
     semantic_telemetry: Optional[SemanticAlignmentTelemetry] = None
+    fastflux_raw: Optional[Dict[str, Any]] = None
 
     # Decision & Attribution
     matched_brand: Optional[str] = None
@@ -299,16 +301,7 @@ class ScanPipeline:
                 is_canonical=ctx.lex_res.is_canonical_domain if ctx.lex_res else False
             )
 
-        (
-            cloaking_raw,
-            (dom_score, dom_matched_brand),
-            (vis_score, vis_matched_brand),
-            dom_forensics_raw,
-            kit_raw,
-            quishing_raw,
-            ocr_raw,
-            semantic_raw
-        ) = await asyncio.gather(
+        gather_results = await asyncio.gather(
             asyncio.to_thread(run_cloaking),
             asyncio.to_thread(run_dom_match),
             asyncio.to_thread(run_vis_match),
@@ -318,6 +311,19 @@ class ScanPipeline:
             asyncio.to_thread(run_ocr),
             asyncio.to_thread(run_semantic_alignment)
         )
+
+        cloaking_raw = gather_results[0]
+        dom_match_res = gather_results[1]
+        dom_score = float(dom_match_res[0])
+        dom_matched_brand = dom_match_res[1]
+        vis_match_res = gather_results[2]
+        vis_score = float(vis_match_res[0])
+        vis_matched_brand = vis_match_res[1]
+        dom_forensics_raw = gather_results[3]
+        kit_raw = gather_results[4]
+        quishing_raw = gather_results[5]
+        ocr_raw = gather_results[6]
+        semantic_raw = gather_results[7]
 
         ctx.dom_score = dom_score
         ctx.dom_matched_brand = dom_matched_brand
@@ -449,12 +455,24 @@ class ScanPipeline:
                 logger.debug(f"Header forensics analysis error: {e}")
                 return {"server_banner": "Unadvertised", "is_outdated_server": False, "missing_security_headers": [], "security_header_coverage_score": 0.0, "has_insecure_cookies": False, "cookie_flags_audit": [], "cache_control_policy": "Default", "has_aggressive_no_cache": False, "redirect_chain_count": 0, "header_anomaly_score": 0.0, "forensic_indicators": []}
 
-        iscx_raw, stackmodel_raw, phishzoo_raw, header_raw = await asyncio.gather(
+        def run_fastflux():
+            """Fast-Flux DNS, TTL Anomaly, and ASN Shannon Entropy."""
+            try:
+                raw_ip = ctx.raw_tls.resolved_ip if ctx.raw_tls else None
+                ips = [raw_ip] if raw_ip and raw_ip != "Pending DNS Resolution" else None
+                return evaluate_fastflux_dns_risk(domain=ctx.url, resolved_ips=ips)
+            except Exception as e:
+                logger.debug(f"Fastflux evaluation error: {e}")
+                return {"fast_flux_composite_index": 0.05, "ttl_anomaly_score": 0.0, "asn_diversity_score": 0.0, "max_asn_reputation_risk": 0.05}
+
+        iscx_raw, stackmodel_raw, phishzoo_raw, header_raw, fastflux_raw = await asyncio.gather(
             asyncio.to_thread(run_iscx_ensemble),
             asyncio.to_thread(run_stackmodel),
             asyncio.to_thread(run_phishzoo),
-            asyncio.to_thread(run_headers)
+            asyncio.to_thread(run_headers),
+            asyncio.to_thread(run_fastflux)
         )
+        ctx.fastflux_raw = fastflux_raw
 
         ctx.iscx_ensemble_telemetry = ISCXEnsembleTelemetry(
             logistic_regression_score=round(float(iscx_raw.get("lr_prob", 0.0)), 4),
@@ -535,17 +553,17 @@ class ScanPipeline:
             matched_brand = lex_res.matched_brand
         elif ctx.dom_matched_brand and ctx.dom_score >= 0.40:
             matched_brand = ctx.dom_matched_brand
-        elif matched_ocr_brand and (ctx.visual_ocr_telemetry.confidence_score >= 0.75 or ctx.dom_score >= 0.25):
+        elif matched_ocr_brand and ctx.visual_ocr_telemetry and (ctx.visual_ocr_telemetry.confidence_score >= 0.75 or ctx.dom_score >= 0.25):
             # Recovers target brand when adversary eliminated or recolored the graphical logo
             matched_brand = matched_ocr_brand
-        elif phishzoo_brand and ctx.phishzoo_telemetry.brand_confidence >= 0.55 and phishzoo_brand in self.brand_names:
+        elif phishzoo_brand and ctx.phishzoo_telemetry and ctx.phishzoo_telemetry.brand_confidence >= 0.55 and phishzoo_brand in self.brand_names:
             # PhishZoo TF-IDF content tokens match a protected brand
             matched_brand = phishzoo_brand
         elif ctx.vis_matched_brand and ctx.vis_score >= 0.65 and (ctx.dom_score >= 0.25 or matched_ocr_brand == ctx.vis_matched_brand):
             matched_brand = ctx.vis_matched_brand
         elif ctx.vis_matched_brand and ctx.vis_score >= 0.80:
             matched_brand = ctx.vis_matched_brand
-        elif matched_ocr_brand and ctx.visual_ocr_telemetry.confidence_score >= 0.60:
+        elif matched_ocr_brand and ctx.visual_ocr_telemetry and ctx.visual_ocr_telemetry.confidence_score >= 0.60:
             matched_brand = matched_ocr_brand
         else:
             matched_brand = None
@@ -583,9 +601,9 @@ class ScanPipeline:
                     heatmap_rel_url, anomaly_score = generate_visual_difference_heatmap(
                         ctx.screenshot_bytes, brand_ref_img_path, ctx.scan_id
                     )
-                    cand_emb = self.embedder.get_image_embedding(ctx.screenshot_bytes)
-                    ref_emb = self.visual_store.brand_embeddings.get(matched_brand)
-                    cos_sim = compute_cosine_similarity(cand_emb, ref_emb) if ref_emb is not None else 0.0
+                    cand_emb = self.embedder.get_image_embedding(ctx.screenshot_bytes) if self.embedder else None
+                    ref_emb = self.visual_store.brand_embeddings.get(matched_brand) if self.visual_store else None
+                    cos_sim = compute_cosine_similarity(cand_emb, ref_emb) if (cand_emb is not None and ref_emb is not None) else 0.0
 
                     try:
                         c_pil = Image.open(io.BytesIO(ctx.screenshot_bytes))
@@ -644,18 +662,20 @@ class ScanPipeline:
             risk_score_boost=aitm_raw.risk_score_boost
         )
 
-        # Multi-Modal XGBoost + TreeSHAP Fusion Classification
+        # Multi-Modal XGBoost + TreeSHAP Fusion Classification (23 Dimensions)
         if self.fusion_model is not None:
+            ff_data = getattr(ctx, "fastflux_raw", None)
             s_phish, shap_contribs, confidence = self.fusion_model.predict(
                 lex_res.s_lex if lex_res else 0.0, s_dom, s_vis,
                 url=ctx.url,
                 brand_list=self.brand_names,
                 canonical_map=self.canonical_map,
-                lex_features=lex_res
+                lex_features=lex_res,
+                fastflux_data=ff_data
             )
         else:
             s_phish = lex_res.s_lex if lex_res else 0.0
-            shap_contribs = {"s_lex": 1.0, "s_dom": 0.0, "s_vis": 0.0}
+            shap_contribs = {"s_lex": 1.0, "s_dom": 0.0, "s_vis": 0.0, "s_dns": 0.0}
             confidence = "reduced"
 
         # Phishpedia (USENIX '21) Consistency-Based Model

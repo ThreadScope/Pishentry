@@ -37,7 +37,10 @@ BRAND_TOKEN_SIGNATURES: Dict[str, List[str]] = {
     ],
     "paypal": [
         "paypal", "paypal inc", "paypal.com", "pay with paypal", "log in to your paypal account",
-        "paypal balance", "paypal credit", "paypal checkout", "service@paypal.com"
+        "paypal balance", "paypal credit", "paypal checkout", "service@paypal.com",
+        "the secure way to pay and get paid", "sign up for paypal", "email or mobile number",
+        "forgotten your email", "accept customers preferred payment methods", "we couldn't load the security challenge",
+        "you have been blocked", "unifiedonboarding", "sign in to paypal with google"
     ],
     "apple": [
         "apple", "apple id", "icloud", "apple.com", "apple inc", "sign in with apple",
@@ -133,6 +136,27 @@ BRAND_TOKEN_SIGNATURES: Dict[str, List[str]] = {
     ],
     "ebay": [
         "ebay", "ebay.com", "ebay inc", "sign in to ebay", "ebay secure login"
+    ],
+    "sbi": [
+        "state bank of india", "onlinesbi", "sbi", "sbi netbanking", "yono sbi", "onlinesbi.sbi"
+    ],
+    "hdfc": [
+        "hdfc", "hdfc bank", "hdfc netbanking", "hdfc customer id", "netbanking.hdfcbank.com"
+    ],
+    "icici": [
+        "icici", "icici bank", "infinity login", "icici netbanking", "imobile", "infinity.icicibank.com"
+    ],
+    "stripe": [
+        "stripe", "stripe dashboard", "stripe inc", "stripe billing", "sign in to stripe"
+    ],
+    "zoom": [
+        "zoom", "zoom video", "zoom meeting", "sign in to zoom", "zoom us"
+    ],
+    "salesforce": [
+        "salesforce", "salesforce crm", "login.salesforce.com", "force.com"
+    ],
+    "okta": [
+        "okta", "okta sso", "okta identity", "sign in with okta", "okta verify", "login.okta.com"
     ]
 }
 
@@ -158,7 +182,7 @@ def extract_tag_sequence(html_content: str) -> List[str]:
             name = elem.name.lower() if elem.name else ""
             if name and name not in IGNORED_TAGS:
                 if name == "input":
-                    itype = elem.get("type", "text").lower()
+                    itype = str(elem.get("type") or "text").lower()
                     tags.append(f"input_{itype}")
                 else:
                     tags.append(name)
@@ -272,7 +296,7 @@ def compute_simhash_similarity(hash1: str, hash2: str) -> float:
         xor_val = int1 ^ int2
         hamming_dist = bin(xor_val).count("1")
         similarity = 1.0 - (hamming_dist / 64.0)
-        return round(float(similarity), 4)
+        return round(similarity, 4)
     except Exception:
         return 0.0
 
@@ -317,8 +341,8 @@ def extract_dom_semantic_text(html_content: str) -> str:
             
         # Form actions & inputs
         for f in soup.find_all("form"):
-            action = f.get("action") or ""
-            pieces.append(action.lower())
+            action = str(f.get("action") or "").lower()
+            pieces.append(action)
         for inp in soup.find_all("input"):
             placeholder = inp.get("placeholder") or ""
             name = inp.get("name") or ""
@@ -365,13 +389,29 @@ def compute_brand_semantic_score(dom_text: str, brand_id: str) -> float:
     return 0.0
 
 
+import math
+
+def compute_tag_frequency_cosine(tags1: List[str], tags2: List[str]) -> float:
+    """Computes cosine similarity between tag frequency distribution vectors."""
+    if not tags1 or not tags2:
+        return 0.0
+    vocab = set(tags1) | set(tags2)
+    v1 = [tags1.count(t) for t in vocab]
+    v2 = [tags2.count(t) for t in vocab]
+    dot = sum(a * b for a, b in zip(v1, v2))
+    norm1 = math.sqrt(sum(a * a for a in v1))
+    norm2 = math.sqrt(sum(b * b for b in v2))
+    return dot / (norm1 * norm2) if (norm1 > 0 and norm2 > 0) else 0.0
+
+
 def compute_dom_similarity(html1: Optional[str], html2: Optional[str]) -> float:
     """
     Computes multi-factor structural DOM similarity between two web surfaces.
     Fuses:
-    1. Multi-gram Tag N-Gram Jaccard overlap (40%)
-    2. 64-bit Locality-Sensitive SimHash similarity (35%)
-    3. Credential Form Topology Alignment (25%)
+    1. Multi-gram Tag N-Gram Jaccard overlap (30%)
+    2. Tag frequency vector cosine alignment (15%)
+    3. 64-bit Locality-Sensitive SimHash similarity (30%)
+    4. Credential Form Topology Alignment (25%)
     """
     if not html1 or not html2 or not html1.strip() or not html2.strip():
         return 0.0
@@ -400,12 +440,15 @@ def compute_dom_similarity(html1: Optional[str], html2: Optional[str]) -> float:
 
     tag_similarity = 0.30 * jaccard_1 + 0.45 * jaccard_2 + 0.25 * jaccard_3
 
-    # 2. 64-bit Structural SimHash Similarity
+    # 2. Tag Frequency Cosine Similarity
+    freq_cosine = compute_tag_frequency_cosine(tags1, tags2)
+
+    # 3. 64-bit Structural SimHash Similarity
     hash1 = compute_dom_simhash(html1)
     hash2 = compute_dom_simhash(html2)
     simhash_sim = compute_simhash_similarity(hash1, hash2)
 
-    # 3. Form Topology Match
+    # 4. Form Topology Match
     topo1 = extract_form_topology(html1)
     topo2 = extract_form_topology(html2)
     
@@ -413,8 +456,8 @@ def compute_dom_similarity(html1: Optional[str], html2: Optional[str]) -> float:
         0.50 if (topo1["password_count"] > 0 and topo2["password_count"] > 0) else 0.20
     )
 
-    combined_similarity = 0.40 * tag_similarity + 0.35 * simhash_sim + 0.25 * topo_sim
-    return round(float(combined_similarity), 4)
+    combined_similarity = 0.30 * tag_similarity + 0.15 * freq_cosine + 0.30 * simhash_sim + 0.25 * topo_sim
+    return round(combined_similarity, 4)
 
 
 def match_dom_against_brands(

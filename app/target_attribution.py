@@ -32,7 +32,7 @@ ENTERPRISE_IDENTITIES: Dict[str, Dict[str, Any]] = {
     "paypal": {
         "display_name": "PayPal Inc.",
         "canonical_domains": ["paypal.com", "paypalobjects.com"],
-        "keywords": ["paypal", "paypa1", "send money", "wallet", "pp-secure"],
+        "keywords": ["paypal", "paypa1", "send money", "wallet", "pp-secure", "the secure way to pay", "pay and get paid", "forgotten your email", "sign up for paypal"],
         "archetype": "Financial & Payment Processing Service"
     },
     "google": {

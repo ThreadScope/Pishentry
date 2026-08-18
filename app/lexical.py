@@ -63,7 +63,7 @@ def compute_url_nlp_risk(url: str) -> float:
         
     # Sigmoid function
     prob = 1.0 / (1.0 + math.exp(-max(-10.0, min(10.0, z))))
-    return round(float(prob), 4)
+    return round(prob, 4)
 
 @dataclass
 class LexicalFeatures:
@@ -88,11 +88,26 @@ class LexicalFeatures:
 
 
 def compute_shannon_entropy(s: str) -> float:
-    """Computes Shannon entropy for character distribution in a string."""
+    """Computes 0th-order Shannon entropy for character distribution in a string."""
     if not s:
         return 0.0
     prob = [float(s.count(c)) / len(s) for c in set(s)]
     return -sum(p * math.log2(p) for p in prob if p > 0)
+
+
+def compute_bigram_transition_entropy(s: str) -> float:
+    """
+    Computes 1st-order Markov conditional transition entropy across bigram sequences
+    to reliably detect algorithmic DGA (Domain Generation Algorithm) variations.
+    """
+    if len(s) < 2:
+        return 0.0
+    bigrams = [s[i:i+2] for i in range(len(s) - 1)]
+    counts = {}
+    for bg in bigrams:
+        counts[bg] = counts.get(bg, 0) + 1
+    total = len(bigrams)
+    return -sum((c / total) * math.log2(c / total) for c in counts.values() if c > 0)
 
 def extract_domain_parts(url: str) -> Tuple[str, str, str, str]:
     """

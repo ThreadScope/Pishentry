@@ -1,16 +1,51 @@
 <!DOCTYPE html>
-<html>
-<head><title>Chase Bank Portal</title></head>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chase Bank - Official Secure Login</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f8fafc; color: #1e293b; margin: 0; padding: 0; }
+        .header { background: #117ACA; color: #ffffff; padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .brand-logo { font-size: 1.4rem; font-weight: 700; }
+        .container { max-width: 440px; margin: 3rem auto; background: #ffffff; padding: 2.5rem; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        h2 { font-size: 1.5rem; margin-bottom: 0.5rem; color: #0f172a; }
+        .subtitle { font-size: 0.9rem; color: #64748b; margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.2rem; }
+        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
+        input[type="text"], input[type="email"], input[type="password"] { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; }
+        input:focus { outline: 2px solid #117ACA; border-color: transparent; }
+        .btn { width: 100%; padding: 0.8rem; background: #117ACA; color: #ffffff; border: none; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; }
+        .footer-note { font-size: 0.78rem; color: #94a3b8; text-align: center; margin-top: 1.5rem; }
+        .footer { background: #0f172a; color: #94a3b8; text-align: center; padding: 1.5rem; font-size: 0.8rem; margin-top: 4rem; }
+    </style>
+</head>
 <body>
-    <header><nav><a>Chase Bank</a></nav></header>
-    <main>
-        <form action="/login" method="post">
-            <h2>Sign in to Chase Bank</h2>
-            <input type="text" name="username" placeholder="Username or email" />
-            <input type="password" name="password" placeholder="Password" />
-            <button type="submit">Log In</button>
+    <header class="header">
+        <div class="brand-logo">Chase Bank</div>
+        <nav>
+            <a href="https://chase.com/help" style="color: #ffffff; text-decoration: none; font-size: 0.85rem;">Help & Support</a>
+        </nav>
+    </header>
+    <main class="container">
+        <h2>Sign in</h2>
+        <p class="subtitle">to access your Chase Bank account and services</p>
+        <form action="https://secure07c.chase.com/web/auth/dashboard" method="POST">
+            <input type="hidden" name="csrf_token" value="auth_token_canonical_chase_production" />
+            <div class="form-group">
+                <label for="username">Username or Email</label>
+                <input type="text" id="username" name="username" placeholder="name@chase.com" required />
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required />
+            </div>
+            <button type="submit" class="btn">Sign In to Chase Bank</button>
         </form>
+        <p class="footer-note">🔒 Protected by 256-bit TLS encryption & multi-factor verification.</p>
     </main>
-    <footer><p>&copy; Chase Bank Inc.</p></footer>
+    <footer class="footer">
+        <p>&copy; 2026 Chase Bank Corporation. All rights reserved. | <a href="https://chase.com/privacy" style="color: #94a3b8;">Privacy Policy</a> | <a href="https://chase.com/terms" style="color: #94a3b8;">Terms of Service</a></p>
+    </footer>
 </body>
 </html>

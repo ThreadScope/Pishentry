@@ -26,7 +26,8 @@ from app.schemas import (
     TakedownPackageResponse,
     TargetAttributionTelemetry, HoneytokenExfiltrationTelemetry,
     VisualOCRTelemetry, RedirectGraphTelemetry,
-    ThreatNarrativeResponse, MultiVendorFirewallResponse
+    ThreatNarrativeResponse, MultiVendorFirewallResponse,
+    WebIntrusionRequest, WebIntrusionResponse
 )
 
 from app.pipeline import ScanPipeline
@@ -55,6 +56,7 @@ from app.visual_ocr import extract_visual_text_from_screenshot
 from app.redirect_graph import trace_redirect_graph
 from app.threat_narrative import generate_threat_narrative
 from app.firewall_rules import generate_multi_vendor_firewall_rules
+from app.web_intrusion_analyzer import analyze_web_access_logs
 
 
 
@@ -540,6 +542,117 @@ def export_threat_narrative_endpoint(request: RuleExportRequest):
         executive_summary=narrative.executive_summary,
         forensic_indicators_of_compromise=narrative.forensic_indicators_of_compromise,
         recommended_soc_actions=narrative.recommended_soc_actions
+    )
+
+@app.post("/api/v1/analyze-logs", response_model=WebIntrusionResponse)
+def analyze_web_server_logs_endpoint(request: WebIntrusionRequest):
+    """
+    Parses Apache/Nginx web server access logs to detect SQLi, LFI/RFI, XSS, scanner probes,
+    credential brute-force, and webshell executions per MITRE ATT&CK techniques.
+    """
+    report = analyze_web_access_logs(request.log_content)
+    return WebIntrusionResponse(**report)
+
+
+from app.ct_monitor import CertificateTransparencyMonitor
+from app.takedown_generator import generate_takedown_package
+
+_global_ct_monitor = CertificateTransparencyMonitor()
+
+@app.get("/api/v1/ct-stream/recent")
+def get_recent_ct_stream_events(limit: int = 20):
+    """
+    Retrieves the most recent Certificate Transparency stream detections across protected enterprise brands.
+    """
+    return {"events": _global_ct_monitor.get_recent_events(limit=limit)}
+
+
+@app.post("/api/v1/ct-stream/check-domain")
+def check_domain_certificate_endpoint(domain: str, issuer: str = "Let's Encrypt"):
+    """
+    Evaluates real-time certificate risk for a specific domain name and CA issuer.
+    """
+    from dataclasses import asdict
+    event = _global_ct_monitor.evaluate_certificate(domain=domain, issuer=issuer)
+    return asdict(event)
+
+
+@app.post("/api/v1/generate-takedown")
+def generate_takedown_endpoint(
+    url: str,
+    brand_id: str,
+    risk_score: float = 0.95,
+    s_lex: float = 0.85,
+    s_dom: float = 0.90,
+    s_vis: float = 0.92,
+    ip_address: Optional[str] = None
+):
+    """
+    Generates a cryptographic SHA-256 RFC abuse takedown package for instant SOC dispatch.
+    """
+    return generate_takedown_package(
+        url=url,
+        brand_id=brand_id,
+        risk_score=risk_score,
+        s_lex=s_lex,
+        s_dom=s_dom,
+        s_vis=s_vis,
+        ip_address=ip_address
+    )
+
+
+from app.fastflux_tracker import evaluate_fastflux_dns_risk
+from app.active_honeytoken_interactor import evaluate_active_honeytoken_interaction, generate_canary_credentials
+from app.evidence_archiver import compile_evidence_zip_package, generate_mhtml_document, build_evidence_merkle_tree
+from fastapi.responses import Response
+
+@app.get("/api/v1/fastflux/inspect")
+def inspect_fastflux_dns_endpoint(domain: str, simulated_ttl: Optional[int] = None):
+    """
+    Evaluates Fast-Flux DNS, TTL anomalies, and ASN Shannon diversity entropy.
+    """
+    return evaluate_fastflux_dns_risk(domain=domain, simulated_ttl=simulated_ttl)
+
+
+@app.post("/api/v1/honeytoken/evaluate")
+def evaluate_honeytoken_endpoint(url: str, dom_html: Optional[str] = None):
+    """
+    Generates canary credentials, simulates form submission, and classifies C2 exfiltration destinations.
+    """
+    return evaluate_active_honeytoken_interaction(url=url, dom_html=dom_html)
+
+
+@app.get("/api/v1/honeytoken/generate")
+def generate_canary_endpoint(url: str):
+    """
+    Generates a deterministic HMAC canary token pair for active tracking.
+    """
+    return generate_canary_credentials(url)
+
+
+@app.post("/api/v1/evidence/export-zip")
+def export_evidence_zip_endpoint(
+    url: str,
+    brand_id: str = "Enterprise Brand",
+    risk_score: float = 0.95,
+    dom_html: str = "<html><body>Forensic Snapshot</body></html>"
+):
+    """
+    Compiles an RFC 2557 MHTML snapshot, HAR dump, and cryptographic SHA-256 Merkle root into a downloadable ZIP archive.
+    """
+    zip_bytes, filename, merkle_root = compile_evidence_zip_package(
+        url=url,
+        brand_id=brand_id,
+        risk_score=risk_score,
+        dom_html=dom_html
+    )
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "X-Merkle-Root-SHA256": merkle_root
+        }
     )
 
 

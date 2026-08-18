@@ -318,6 +318,21 @@ class WebhookAlertRequest(BaseModel):
   scan_result: ScanResult
   custom_title: Optional[str] = " CloneCatcher Critical SOC Alert"
 
+class WebIntrusionRequest(BaseModel):
+  log_content: str
+
+class WebIntrusionResponse(BaseModel):
+  total_requests_parsed: int
+  unique_ip_addresses: int
+  total_suspicious_events: int
+  severity_breakdown: Dict[str, int]
+  category_breakdown: Dict[str, int]
+  top_attacker_ips: List[Dict[str, Any]]
+  brute_force_detections: List[Dict[str, Any]]
+  detailed_findings: List[Dict[str, Any]]
+  recommended_blocklist_ips: List[str]
+  soc_remediation_commands: Dict[str, List[str]]
+
 class WebhookAlertResponse(BaseModel):
   success: bool
   message: str

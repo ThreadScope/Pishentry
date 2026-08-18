@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up for PayPal - The secure way to pay and get paid</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PayPalOpen-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        body { background: #ffffff; color: #001435; display: flex; flex-direction: column; min-height: 100vh; }
+        .nav-bar { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 3rem; border-bottom: 1px solid #eaeced; }
+        .nav-left { display: flex; align-items: center; gap: 2rem; }
+        .paypal-logo { font-size: 1.75rem; font-weight: 900; font-style: italic; color: #003087; letter-spacing: -1px; }
+        .paypal-logo span { color: #0079C1; }
+        .nav-links a { color: #001435; text-decoration: none; font-size: 0.95rem; font-weight: 600; margin-right: 1.5rem; }
+        .btn-login { padding: 0.55rem 1.6rem; border: 1.5px solid #001435; border-radius: 20px; color: #001435; text-decoration: none; font-size: 0.9rem; font-weight: 700; }
+        .content { max-width: 900px; margin: 4rem auto; text-align: center; padding: 0 1.5rem; flex: 1; }
+        .eyebrow { font-size: 1rem; color: #4b5563; font-weight: 600; margin-bottom: 0.5rem; }
+        h1 { font-size: 2.8rem; font-weight: 800; color: #001435; line-height: 1.2; margin-bottom: 3rem; letter-spacing: -0.5px; }
+        .selection-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; text-align: left; margin-bottom: 3rem; }
+        .card { padding: 2rem; border-radius: 8px; border: 1.5px solid #cbd5e1; cursor: pointer; transition: all 0.2s ease; }
+        .card.active { border: 2px solid #0070ba; box-shadow: 0 0 0 1px #0070ba; }
+        .card-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        .radio-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #0070ba; display: flex; align-items: center; justify-content: center; }
+        .radio-dot.checked::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: #0070ba; }
+        .radio-dot.unchecked { border-color: #94a3b8; }
+        .card-title { font-size: 1.6rem; font-weight: 800; color: #001435; }
+        .card-desc { font-size: 0.95rem; color: #374151; margin-bottom: 1.5rem; line-height: 1.5; }
+        .features-list { list-style: none; }
+        .features-list li { font-size: 0.9rem; color: #374151; margin-bottom: 0.75rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .check-icon { color: #0070ba; font-weight: 800; }
+        .btn-get-started { padding: 0.9rem 3rem; background: #001435; color: #ffffff; border: none; border-radius: 30px; font-size: 1.05rem; font-weight: 700; cursor: pointer; }
+        .btn-get-started:hover { background: #1e293b; }
+        .cookie-banner { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 1px solid #eaeced; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
+        .cookie-text { font-size: 0.85rem; color: #4b5563; max-width: 75%; }
+        .cookie-actions { display: flex; gap: 0.75rem; }
+        .btn-cookie-accept { padding: 0.5rem 1.2rem; background: #001435; color: #ffffff; border: none; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn-cookie-decline { padding: 0.5rem 1.2rem; background: transparent; border: 1px solid #94a3b8; color: #001435; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header class="nav-bar">
+        <div class="nav-left">
+            <div class="paypal-logo">Pay<span>Pal</span></div>
+            <nav class="nav-links">
+                <a href="https://www.paypal.com/in/webapps/mpp/home">Personal</a>
+                <a href="https://www.paypal.com/in/webapps/mpp/merchant">Business</a>
+                <a href="https://www.paypal.com/in/webapps/mpp/partner-program">Partners</a>
+                <a href="https://www.paypal.com/in/webapps/mpp/paypal-safety-and-security">Useful Info</a>
+            </nav>
+        </div>
+        <a href="https://www.paypal.com/signin" class="btn-login">Log In</a>
+    </header>
+
+    <main class="content">
+        <div class="eyebrow">Sign up for PayPal</div>
+        <h1>The secure way to<br>pay and get paid.</h1>
+
+        <div class="selection-grid">
+            <div class="card active">
+                <div class="card-header">
+                    <div class="radio-dot checked"></div>
+                    <div class="card-title">Business</div>
+                </div>
+                <p class="card-desc">Sell online or in-person. Help grow your business, whether you're a casual seller, freelancer, or a company.</p>
+                <ul class="features-list">
+                    <li><span class="check-icon">&#10003;</span> Accept customers' preferred payment methods so you don't miss a sale</li>
+                    <li><span class="check-icon">&#10003;</span> Easily integrate with the tools and partners you use to run your business</li>
+                    <li><span class="check-icon">&#10003;</span> Sell securely with a brand customers trust globally</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="radio-dot unchecked"></div>
+                    <div class="card-title">Personal</div>
+                </div>
+                <p class="card-desc">Send, spend, and manage transactions. All in one secure app.</p>
+                <ul class="features-list">
+                    <li><span class="check-icon">&#10003;</span> Shop online without sharing your payment info at checkout</li>
+                    <li><span class="check-icon">&#10003;</span> Manage transactions and more</li>
+                </ul>
+            </div>
+        </div>
+
+        <button class="btn-get-started">Get Started</button>
+    </main>
+
+    <div class="cookie-banner">
+        <div class="cookie-text">
+            If you accept cookies, we'll use them to improve and customise your experience and enable our partners to show you personalised PayPal ads when you visit other sites. <a href="https://www.paypal.com/in/webapps/mpp/ua/cookie-full" style="color: #0070ba;">Manage cookies and learn more</a>
+        </div>
+        <div class="cookie-actions">
+            <button class="btn-cookie-accept">Accept</button>
+            <button class="btn-cookie-decline">Decline</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up for PayPal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: "PayPalOpen-Regular", "Helvetica Neue", Helvetica, Arial, sans-serif; }
+        body { background: #ffffff; color: #001435; display: flex; flex-direction: column; min-height: 100vh; justify-content: space-between; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; }
+        .paypal-logo { font-size: 1.8rem; font-weight: 900; font-style: italic; color: #003087; letter-spacing: -1px; }
+        .paypal-logo span { color: #0079C1; }
+        .btn-login { padding: 0.4rem 1.4rem; border: 1.5px solid #001435; border-radius: 20px; color: #001435; text-decoration: none; font-size: 0.85rem; font-weight: 700; }
+        .signup-container { max-width: 480px; margin: 2rem auto; text-align: center; padding: 0 1rem; flex: 1; }
+        h1 { font-size: 2.2rem; font-weight: 800; color: #001435; margin-bottom: 2.5rem; }
+        .input-box { width: 100%; height: 52px; padding: 0 1.2rem; border: 1.5px solid #cbd5e1; border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem; outline: none; }
+        .input-box:focus { border-color: #0070ba; }
+        .btn-next { width: 100%; height: 50px; background: #001435; color: #ffffff; border: none; border-radius: 25px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .btn-next:hover { background: #1e293b; }
+        .google-prompt { position: fixed; top: 1.5rem; right: 2rem; background: #202124; color: #ffffff; padding: 0.8rem 1.2rem; border-radius: 24px; display: flex; align-items: center; gap: 0.75rem; box-shadow: 0 4px 12px rgba(0,0,0,0.25); font-size: 0.85rem; }
+        .google-btn { background: #1a73e8; color: #ffffff; border: none; padding: 0.35rem 0.9rem; border-radius: 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+        .footer { text-align: center; padding: 1.5rem; font-size: 0.75rem; color: #64748b; }
+        .footer a { color: #64748b; text-decoration: none; margin: 0 0.5rem; }
+    </style>
+</head>
+<body>
+    <header class="top-bar">
+        <div></div>
+        <div class="paypal-logo">Pay<span>Pal</span></div>
+        <a href="https://www.paypal.com/signin" class="btn-login">Log In</a>
+    </header>
+
+    <div class="google-prompt">
+        <span>Sign in to PayPal with Google</span>
+        <button class="google-btn">Continue</button>
+    </div>
+
+    <main class="signup-container">
+        <h1>Sign up for PayPal</h1>
+        <form action="https://www.paypal.com/in/welcome/signup/#/login_info" method="POST">
+            <input type="email" placeholder="Your email" id="signup_email" name="signup_email" class="input-box" required />
+            <button type="submit" class="btn-next">Next</button>
+        </form>
+    </main>
+
+    <footer class="footer">
+        &copy; 2026 PayPal <a href="https://www.paypal.com/in/webapps/mpp/ua/privacy-full">Privacy</a> <a href="https://www.paypal.com/in/webapps/mpp/ua/legal-hub">Legal</a> <a href="https://www.paypal.com/in/smarthelp/contact-us">Contact</a> <a href="#">Feedback</a>
+    </footer>
+</body>
+</html>
