@@ -8,6 +8,9 @@ skills/*
 *.so
 sample/
 samples/
+*.tar.gz
+*.tar
+*.zip
 # Distribution / packaging
 .Python
 build/

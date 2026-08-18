@@ -110,12 +110,15 @@ def train_and_eval(dataset_size: int = 20000):
     print("Training optimized XGBoost Multi-Modal Fusion Classifier...")
 
     model = xgb.XGBClassifier(
-        n_estimators=150,
+        n_estimators=200,
         max_depth=4,
-        learning_rate=0.05,
+        learning_rate=0.04,
         subsample=0.85,
         colsample_bytree=0.85,
-        gamma=0.1,
+        gamma=0.15,
+        min_child_weight=2,
+        reg_alpha=0.05,
+        reg_lambda=1.0,
         eval_metric="logloss",
         random_state=42
     )
@@ -125,21 +128,21 @@ def train_and_eval(dataset_size: int = 20000):
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
 
-    accuracy = accuracy_score(y_test, y_pred)
+    accuracy = float(accuracy_score(y_test, y_pred))
     precision = float(precision_score(y_test, y_pred, zero_division=0.0))
     recall = float(recall_score(y_test, y_pred, zero_division=0.0))
     f1 = float(f1_score(y_test, y_pred, zero_division=0.0))
-    roc_auc = roc_auc_score(y_test, y_prob)
+    roc_auc = float(roc_auc_score(y_test, y_prob))
     
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-    fpr = fp / (fp + tn) if (fp + tn) > 0 else 0.0
-    fnr = fn / (fn + tp) if (fn + tp) > 0 else 0.0
+    fpr = float(fp / (fp + tn)) if (fp + tn) > 0 else 0.0
+    fnr = float(fn / (fn + tp)) if (fn + tp) > 0 else 0.0
 
     print("\n========================================================")
     print("      PHISHSENTRY AI FUSION MODEL EVALUATION REPORT     ")
     print("========================================================")
     print(f"Total Dataset Samples  : {len(data)}")
-    print(f"Features Dimension     : {X.shape[1]} ({', '.join(FEATURE_NAMES[:5])}...)")
+    print(f"Features Dimension     : {X_mat.shape[1]} ({', '.join(FEATURE_NAMES[:5])}...)")
     print(f"Held-out Test Samples  : {len(y_test)}")
     print(f"Accuracy               : {accuracy * 100:.2f}%")
     print(f"Precision              : {precision * 100:.2f}% (Target: >= 95%)")
