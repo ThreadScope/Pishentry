@@ -204,10 +204,10 @@ class PlaywrightAppTester:
 
             # 2. Check Branding & System Diagnostics
             page_text = await page.content()
-            if "PhishSentry AI" in page_text:
-                self.log_pass("Found 'PhishSentry AI' banner header")
+            if "CloneCatcher AI" in page_text:
+                self.log_pass("Found 'CloneCatcher AI' banner header")
             else:
-                self.log_issue("UI", "Header Banner Missing", "Could not locate 'PhishSentry AI' banner text", "HIGH")
+                self.log_issue("UI", "Header Banner Missing", "Could not locate 'CloneCatcher AI' banner text", "HIGH")
 
             if "CONNECTED TO BACKEND" in page_text:
                 self.log_pass("System Diagnostics shows 'CONNECTED TO BACKEND'")

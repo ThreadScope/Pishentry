@@ -10,7 +10,7 @@ from datetime import datetime
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 
 st.set_page_config(
-  page_title="PhishSentry AI — Enterprise SOC Analyst Console",
+  page_title="CloneCatcher AI — Enterprise SOC Analyst Console",
   page_icon=" ",
   layout="wide",
   initial_sidebar_state="expanded"
@@ -288,7 +288,7 @@ st.markdown("""
 <div class="header-container">
   <div>
     <div class="brand-title">
-      PhishSentry AI 
+      CloneCatcher AI 
       <span style="color: #38bdf8; font-weight: 600; font-size: 0.85rem; background: rgba(56, 189, 248, 0.12); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.3);">ENTERPRISE SOC CONSOLE</span>
     </div>
     <div class="brand-subtitle">Multi-Modal Threat Attribution, Dual-Engine Visual Matching, TLS Telemetry & STIX 2.1 Ingestion</div>
@@ -986,7 +986,7 @@ with main_tab_single:
       with c_wh1:
         st.markdown("###### OASIS STIX 2.1 Threat Intel Bundle")
         try:
-          stix_resp = requests.post(f"{api_url_input}/export/stix", json={"scan_results": [data], "author": "PhishSentry SOC Analyst"})
+          stix_resp = requests.post(f"{api_url_input}/export/stix", json={"scan_results": [data], "author": "CloneCatcher SOC Analyst"})
           if stix_resp.status_code == 200:
             stix_json = stix_resp.json()
             st.download_button(
@@ -1014,7 +1014,7 @@ with main_tab_single:
                 json={
                   "webhook_url": webhook_target_url,
                   "scan_result": data,
-                  "custom_title": "PhishSentry Real-Time Threat Incident"
+                  "custom_title": "CloneCatcher Real-Time Threat Incident"
                 },
                 timeout=10
               )
@@ -1083,7 +1083,7 @@ with main_tab_single:
 
     with tab6:
       st.markdown("##### High-Performance Multi-Stage Asynchronous Data Flow Engine")
-      st.caption("Visualizing the concurrent, non-blocking asynchronous pipeline architecture orchestrating PhishSentry AI scans.")
+      st.caption("Visualizing the concurrent, non-blocking asynchronous pipeline architecture orchestrating CloneCatcher AI scans.")
 
       # Execution Metrics HUD
       p_c1, p_c2, p_c3, p_c4 = st.columns(4)

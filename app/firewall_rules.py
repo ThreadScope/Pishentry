@@ -48,7 +48,7 @@ commit
     # 2. Cloudflare WAF JSON Expression
     cf_expr = f'(http.host eq "{domain}" or ssl.client.hello.sni eq "{domain}")'
     cloudflare_json = f"""{{
-  "name": "PhishSentry AI - Block Malicious Phishing Domain {domain}",
+  "name": "CloneCatcher AI - Block Malicious Phishing Domain {domain}",
   "description": "Automated AI block rule (Score: {s_phish:.2f})",
   "action": "block",
   "expression": "{cf_expr}",
@@ -65,7 +65,7 @@ config firewall address
 end
 config firewall policy
     edit 0
-        set name "PhishSentry_Block_{clean_tag}"
+        set name "CloneCatcher_Block_{clean_tag}"
         set srcintf "any"
         set dstintf "any"
         set srcaddr "all"
@@ -88,8 +88,8 @@ access-list INSIDE_OUT deny ip any object OBJ_PHISH_{clean_tag}
 
     # 5. Suricata / Snort IPS Rule
     suricata = f"""# --- Suricata / Snort IPS Rule ---
-drop http $HOME_NET any -> $EXTERNAL_NET any (msg:"PhishSentry AI - Blocked outbound connection to phishing domain {domain}"; http.host; content:"{domain}"; nocase; classtype:trojan-activity; sid:9001{abs(hash(domain))%9000:04d}; rev:1;)
-drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"PhishSentry AI - Blocked TLS SNI to phishing domain {domain}"; tls.sni; content:"{domain}"; nocase; classtype:trojan-activity; sid:9002{abs(hash(domain))%9000:04d}; rev:1;)
+drop http $HOME_NET any -> $EXTERNAL_NET any (msg:"CloneCatcher AI - Blocked outbound connection to phishing domain {domain}"; http.host; content:"{domain}"; nocase; classtype:trojan-activity; sid:9001{abs(hash(domain))%9000:04d}; rev:1;)
+drop tls $HOME_NET any -> $EXTERNAL_NET any (msg:"CloneCatcher AI - Blocked TLS SNI to phishing domain {domain}"; tls.sni; content:"{domain}"; nocase; classtype:trojan-activity; sid:9002{abs(hash(domain))%9000:04d}; rev:1;)
 """
 
     return MultiVendorFirewallRules(

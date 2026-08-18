@@ -78,7 +78,7 @@ def generate_threat_narrative(scan_data: Dict[str, Any]) -> ThreatNarrativeRepor
     # Executive Summary
     if severity in ["CRITICAL", "HIGH"]:
         exec_summary = (
-            f"PhishSentry AI identified an active high-confidence cyber threat targeting {entity_name} at domain `{domain}` "
+            f"CloneCatcher AI identified an active high-confidence cyber threat targeting {entity_name} at domain `{domain}` "
             f"with a {s_phish*100:.1f}% calculated phishing probability. The candidate infrastructure exhibits {archetype} characteristics."
         )
     else:

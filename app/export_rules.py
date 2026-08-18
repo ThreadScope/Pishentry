@@ -15,13 +15,13 @@ def generate_sigma_rule(scan_result: Dict[str, Any]) -> str:
 
     domain = url.split("://")[-1].split("/")[0].split(":")[0]
 
-    yaml_rule = f"""title: PhishSentry AI - Phishing Impersonation of {matched_brand}
+    yaml_rule = f"""title: CloneCatcher AI - Phishing Impersonation of {matched_brand}
 id: {rule_id}
 status: experimental
 description: Detects outbound web proxy requests to confirmed phishing campaign impersonating {matched_brand} (Score: {s_phish:.2f}).
 references:
     - https://attack.mitre.org/techniques/T1566/002/
-author: PhishSentry AI SOC Auto-Generator
+author: CloneCatcher AI SOC Auto-Generator
 date: {today}
 tags:
     - attack.initial_access
@@ -57,10 +57,10 @@ def generate_yara_rule(scan_result: Dict[str, Any]) -> str:
     matched_brand = (scan_result.get("matched_brand") or "Phish").replace(" ", "_")
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
 
-    yara_rule = f"""rule PhishSentry_{matched_brand}_{clean_domain_tag}_{today} {{
+    yara_rule = f"""rule CloneCatcher_{matched_brand}_{clean_domain_tag}_{today} {{
     meta:
-        description = "PhishSentry AI automated detection for {matched_brand} credential harvester"
-        author = "PhishSentry AI Security Pipeline"
+        description = "CloneCatcher AI automated detection for {matched_brand} credential harvester"
+        author = "CloneCatcher AI Security Pipeline"
         date = "{today}"
         threat_level = "Critical"
         target_domain = "{domain}"
@@ -79,7 +79,7 @@ def generate_dns_blocklist(scan_results: List[Dict[str, Any]]) -> str:
     """
     lines = [
         "# ========================================================",
-        "# PhishSentry AI Threat Intelligence — DNS Firewall Feed",
+        "# CloneCatcher AI Threat Intelligence — DNS Firewall Feed",
         f"# Generated at: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%SZ')}",
         "# Format: Standard FQDN Blocklist (RPZ / Pi-hole / Palo Alto EDL)",
         "# ========================================================",

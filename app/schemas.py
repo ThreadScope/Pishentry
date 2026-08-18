@@ -302,7 +302,7 @@ class ScanResult(BaseModel):
 class WebhookAlertRequest(BaseModel):
   webhook_url: str
   scan_result: ScanResult
-  custom_title: Optional[str] = " PhishSentry Critical SOC Alert"
+  custom_title: Optional[str] = " CloneCatcher Critical SOC Alert"
 
 class WebhookAlertResponse(BaseModel):
   success: bool
@@ -342,6 +342,6 @@ class HealthResponse(BaseModel):
 
 class STIXExportRequest(BaseModel):
   scan_results: List[ScanResult]
-  author: Optional[str] = "PhishSentry AI SOC"
+  author: Optional[str] = "CloneCatcher AI SOC"
 
 

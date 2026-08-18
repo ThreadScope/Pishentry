@@ -1,7 +1,7 @@
 """
 app/pipeline.py
 ===============
-High-Performance Multi-Stage Asynchronous Data Flow Engine for PhishSentry AI.
+High-Performance Multi-Stage Asynchronous Data Flow Engine for CloneCatcher AI.
 
 Coordinates concurrent data ingestion, thread-pooled feature extraction,
 hierarchical brand resolution, multi-modal XGBoost/SHAP fusion, Phishpedia
@@ -117,7 +117,7 @@ class PipelineContext:
 
 class ScanPipeline:
     """
-    Orchestrates the modular, concurrent PhishSentry AI data flow:
+    Orchestrates the modular, concurrent CloneCatcher AI data flow:
     Stage 1: Async Ingestion & Network Lineage
     Stage 2: Parallel Multi-Modal Feature Extraction (Thread-pooled CPU/IO)
     Stage 3: Decision, Attribution & Multi-Modal XGBoost/SHAP Fusion

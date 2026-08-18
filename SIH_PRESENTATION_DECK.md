@@ -1,12 +1,12 @@
 # Smart India Hackathon (SIH) Presentation Deck
-## Project: PhishSentry AI — Autonomous Multi-Modal Zero-Hour Phishing Detection & Active Triage Engine
+## Project: CloneCatcher AI — Autonomous Multi-Modal Zero-Hour Phishing Detection & Active Triage Engine
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                                 SIH PRESENTATION DECK                                  │
 │                                                                                        │
 │  • Theme: Blockchain & Cybersecurity / Smart Automation / AI                           │
-│  • Project Name: PhishSentry AI (Pishentry)                                            │
+│  • Project Name: CloneCatcher AI (CloneCatcher)                                            │
 │  • Format: Standard 8–10 Slide Official SIH PPT Structure                              │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -21,14 +21,14 @@
 * **Organization:** Ministry of Electronics and Information Technology (MeitY) / National Cyber Security Coordinator (NCSC)
 
 #### Slide Content:
-* **Project Name:** **PhishSentry AI (`Pishentry`)**
+* **Project Name:** **CloneCatcher AI (`CloneCatcher`)**
 * **Team Name:** *[Your Team Name]*
 * **Team Leader:** *[Leader Name]* | **Email:** *[Leader Email]*
 * **Team Members:** *[Member 1, Member 2, Member 3, Member 4, Member 5]*
 * **Institute / College:** *[Your University / Institute Name]*
 
 > **Speaker Note / Pitch (15s):**  
-> *"Good morning respected jury members. We present **PhishSentry AI**, an enterprise-grade, tri-modal artificial intelligence system that detects zero-hour phishing attacks in real-time before traditional blacklists update, providing mathematical SHAP explainability and automated one-click threat takedowns."*
+> *"Good morning respected jury members. We present **CloneCatcher AI**, an enterprise-grade, tri-modal artificial intelligence system that detects zero-hour phishing attacks in real-time before traditional blacklists update, providing mathematical SHAP explainability and automated one-click threat takedowns."*
 
 ---
 
@@ -57,12 +57,12 @@
 
 ---
 
-### Slide 3: Proposed Solution — PhishSentry AI
+### Slide 3: Proposed Solution — CloneCatcher AI
 
 * **Slide Title:** Proposed Solution: Unified Tri-Modal AI Fusion Engine
 
 #### Solution Overview:
-**PhishSentry AI** abandons reactive URL lookups in favor of an **active, real-time Multi-Modal Fusion Pipeline** that simultaneously evaluates:
+**CloneCatcher AI** abandons reactive URL lookups in favor of an **active, real-time Multi-Modal Fusion Pipeline** that simultaneously evaluates:
 
 1. **Lexical & WHOIS Signals ($S_{\text{lex}}$):** Shannon entropy, Levenshtein distance, combosquatting depth, newly registered domain (NRD) age.
 2. **DOM Structural Forensics ($S_{\text{dom}}$):** 64-bit Locality-Sensitive SimHash, hierarchical tag paths, formless theft detection, zero-font sanitization.
@@ -125,7 +125,7 @@
 
 * **Slide Title:** Innovation, Novelty & Competitive Advantages
 
-#### Why PhishSentry Outperforms Existing Tools:
+#### Why CloneCatcher Outperforms Existing Tools:
 
 1. **Anti-AiTM & Reverse Proxy Detection:**
    * Detects Evilginx/Modlishka credential interceptors by matching visual branding against non-canonical TLS certificate issuers and domain roots.
@@ -202,7 +202,7 @@
 
 #### Comparison with Existing Industry Solutions:
 
-| Feature / Metric | VirusTotal / Safe Browsing | Legacy Machine Learning | PhishSentry AI (Our Solution) |
+| Feature / Metric | VirusTotal / Safe Browsing | Legacy Machine Learning | CloneCatcher AI (Our Solution) |
 | :--- | :---: | :---: | :---: |
 | **Zero-Hour Detection** | ❌ (Reactive Blacklist) | ⚠️ (Lexical Only) | ✅ **Tri-Modal Real-Time** |
 | **AiTM Reverse Proxy Detection** | ❌ | ❌ | ✅ **Full Detection** |
@@ -237,7 +237,7 @@
 * **Slide Title:** Conclusion & Key References
 
 #### Summary:
-* **PhishSentry AI** provides a complete, production-grade defense against sophisticated zero-hour phishing campaigns.
+* **CloneCatcher AI** provides a complete, production-grade defense against sophisticated zero-hour phishing campaigns.
 * Bridges the gap between **high-accuracy detection**, **transparent explainability**, and **active threat mitigation**.
 
 #### Key Academic & Standard References:
@@ -258,7 +258,7 @@
 │                                 THANK YOU / Q&A SESSION                                │
 │                       "Securing the Digital Frontier, One URL at a Time"               │
 │                                                                                        │
-│               GitHub Repository: https://github.com/your-org/pishentry                 │
+│               GitHub Repository: https://github.com/your-org/clonecatcher                 │
 │               Live Demo Endpoint: http://localhost:8501 / API: :8000                   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```

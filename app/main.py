@@ -118,7 +118,7 @@ def create_all_seed_brand_assets():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("Initializing PhishSentry AI pipeline lifespan...")
+    logger.info("Initializing CloneCatcher AI pipeline lifespan...")
     
     # 1. Start persistent Playwright renderer worker
     try:
@@ -162,16 +162,16 @@ async def lifespan(app: FastAPI):
     # 6. Load Fusion Classifier
     if state.fusion_model is None:
         state.fusion_model = FusionClassifier(MODEL_FILE if os.path.exists(MODEL_FILE) else None)
-    logger.info("PhishSentry AI startup complete.")
+    logger.info("CloneCatcher AI startup complete.")
 
     yield
 
     # Teardown
-    logger.info("PhishSentry AI shutting down...")
+    logger.info("CloneCatcher AI shutting down...")
     await close_renderer()
 
 app = FastAPI(
-    title="PhishSentry AI Enterprise API",
+    title="CloneCatcher AI Enterprise API",
     description="Multi-modal phishing detection fusing lexical, DOM-structural, visual similarity signals, TLS telemetry, and AiTM analysis.",
     version="1.3.0",
     lifespan=lifespan
@@ -440,7 +440,7 @@ def export_stix_bundle(request: STIXExportRequest):
         "id": identity_id,
         "created": now_iso,
         "modified": now_iso,
-        "name": request.author or "PhishSentry AI Security System",
+        "name": request.author or "CloneCatcher AI Security System",
         "identity_class": "system"
     })
 

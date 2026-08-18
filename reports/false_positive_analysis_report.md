@@ -1,8 +1,8 @@
-# PhishSentry AI — False Positive Analysis & Remediation Report
+# CloneCatcher AI — False Positive Analysis & Remediation Report
 
 **Document Version:** 2.4.0  
 **Classification:** Enterprise Cyber Threat Intelligence & Machine Learning Assessment  
-**Author:** PhishSentry AI Security Architecture Team  
+**Author:** CloneCatcher AI Security Architecture Team  
 **Evaluation Date:** August 18, 2026  
 **Status:** Remediated & Verified (61/61 Automated Integration Tests Passing)
 
@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-During real-time stress testing of **PhishSentry AI**, a critical false brand attribution edge case was identified: when inspecting legitimate or spoofed Google authentication surfaces, the visual and DOM comparison engine incorrectly attributed the target to **Microsoft** and rendered a difference heatmap against Microsoft’s reference baseline.
+During real-time stress testing of **CloneCatcher AI**, a critical false brand attribution edge case was identified: when inspecting legitimate or spoofed Google authentication surfaces, the visual and DOM comparison engine incorrectly attributed the target to **Microsoft** and rendered a difference heatmap against Microsoft’s reference baseline.
 
 This report provides a formal **Root Cause Analysis (RCA)**, details the mathematical and structural fixes implemented across the DOM parsing and ResNet-50 visual pipelines, presents empirical **Before vs. After validation metrics**, and outlines our continuous false-positive suppression framework aligned with **USENIX Security '21 Phishpedia principles**.
 
@@ -174,9 +174,9 @@ All **61 automated test cases** across all project modules passed with 100% veri
 
 ```text
 ============================= test session starts =============================
-platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0 -- J:\PROGRAM\project\Pishentry\.venv\Scripts\python.exe
+platform win32 -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0 -- J:\PROGRAM\project\CloneCatcher\.venv\Scripts\python.exe
 cachedir: .pytest_cache
-rootdir: J:\PROGRAM\project\Pishentry
+rootdir: J:\PROGRAM\project\CloneCatcher
 plugins: anyio-4.14.2, asyncio-1.4.0
 
 tests/test_advanced_improvements.py (6 tests) ...................... [PASSED]
@@ -214,4 +214,4 @@ tests/test_visual_similarity.py (4 tests) .......................... [PASSED]
    - Maintain the reference-only training paradigm: detection must always test the formal consistency between visual identity and registered domain, preventing test-time distribution shift.
 
 ---
-*Report generated and validated by PhishSentry AI Security Architecture Team.*
+*Report generated and validated by CloneCatcher AI Security Architecture Team.*

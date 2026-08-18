@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def dispatch_soc_webhook_alert(
   webhook_url: str,
   scan_result: Dict[str, Any],
-  custom_title: Optional[str] = " PhishSentry AI Critical Phishing Alert"
+  custom_title: Optional[str] = " CloneCatcher AI Critical Phishing Alert"
 ) -> bool:
   """
   Sends an automated JSON alert payload to SOC Webhooks (Slack, MS Teams, Cortex XSOAR, Splunk HEC).
@@ -38,7 +38,7 @@ def dispatch_soc_webhook_alert(
           {"title": "Resolved IP", "value": str(resolved_ip), "short": True},
           {"title": "Analysis Latency", "value": f"{latency/1000:.2f}s", "short": True}
         ],
-        "footer": "PhishSentry AI Enterprise SOC Sentinel"
+        "footer": "CloneCatcher AI Enterprise SOC Sentinel"
       }
     ],
     "raw_scan_data": scan_result
@@ -48,7 +48,7 @@ def dispatch_soc_webhook_alert(
     req = urllib.request.Request(
       webhook_url,
       data=json.dumps(payload).encode("utf-8"),
-      headers={"Content-Type": "application/json", "User-Agent": "PhishSentry-SOC-Webhook/1.2"}
+      headers={"Content-Type": "application/json", "User-Agent": "CloneCatcher-SOC-Webhook/1.2"}
     )
     with urllib.request.urlopen(req, timeout=5) as resp:
       logger.info(f"Successfully dispatched webhook alert (HTTP {resp.status}) to {webhook_url}")

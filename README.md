@@ -1,4 +1,4 @@
-# PhishSentry AI — Autonomous Multi-Modal Zero-Hour Phishing Detection & Active Triage Engine
+# CloneCatcher AI — Autonomous Multi-Modal Zero-Hour Phishing Detection & Active Triage Engine
 
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.110.0-009688.svg)](https://fastapi.tiangolo.com/)
@@ -6,9 +6,9 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.32.0-FF4B4B.svg)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**PhishSentry AI (`Pishentry`)** is an enterprise-grade, tri-modal artificial intelligence system designed to detect and mitigate zero-hour phishing attacks before traditional threat feeds and blocklists update. 
+**CloneCatcher AI (`CloneCatcher`)** is an enterprise-grade, tri-modal artificial intelligence system designed to detect and mitigate zero-hour phishing attacks before traditional threat feeds and blocklists update. 
 
-Unlike legacy signature-based filters, PhishSentry AI executes an active **Multi-Modal Inspection Pipeline** combining **Lexical Analysis**, **Headless DOM Forensics**, and **Deep Visual Perception (ResNet-50 + dHash)** into a calibrated **XGBoost Classifier** with **TreeSHAP Explainability** and **Automated 1-Click Takedown Generation**.
+Unlike legacy signature-based filters, CloneCatcher AI executes an active **Multi-Modal Inspection Pipeline** combining **Lexical Analysis**, **Headless DOM Forensics**, and **Deep Visual Perception (ResNet-50 + dHash)** into a calibrated **XGBoost Classifier** with **TreeSHAP Explainability** and **Automated 1-Click Takedown Generation**.
 
 ---
 
@@ -101,7 +101,7 @@ streamlit run ui/streamlit_app.py
 ## 📁 Repository Structure
 
 ```text
-Pishentry/
+CloneCatcher/
 ├── README.md                           # Enterprise documentation & quickstart
 ├── SIH_PRESENTATION_DECK.md            # Official Smart India Hackathon presentation deck
 ├── requirements.txt                    # Python dependencies

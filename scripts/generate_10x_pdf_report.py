@@ -6,7 +6,7 @@ html_content = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>PhishSentry AI — 10X Deep Cybersecurity Testing & SOC Operations PDF Report</title>
+<title>CloneCatcher AI — 10X Deep Cybersecurity Testing & SOC Operations PDF Report</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
@@ -283,14 +283,14 @@ html_content = """<!DOCTYPE html>
 <!-- COVER HEADER -->
 <div class="cover">
   <div class="cover-badge">10X Deep SOC Audit & Testing Report</div>
-  <h1>PhishSentry AI — Multi-Modal Cyber Security & SOC Evaluation</h1>
+  <h1>CloneCatcher AI — Multi-Modal Cyber Security & SOC Evaluation</h1>
   <div class="cover-subtitle">
     End-to-End Operational Assessment using 873 Cybersecurity Agent Skills: Automated Testing, SOC Telemetry, SHAP Feature Importance, and Vulnerability Triage.
   </div>
   <div class="cover-meta-grid">
     <div class="cover-meta-item">
       <strong>Target Platform</strong>
-      PhishSentry AI (MVP)
+      CloneCatcher AI (MVP)
     </div>
     <div class="cover-meta-item">
       <strong>Evaluation Date</strong>
@@ -329,11 +329,11 @@ html_content = """<!DOCTYPE html>
 
 <!-- SECTION 1: EXEC SUMMARY & TEST SUITE EVALUATION -->
 <div class="section-title">01. Comprehensive Test Suite & Skill Execution Results</div>
-<div class="section-subtitle">Empirical validation of PhishSentry AI modules using unit and integration testing skills.</div>
+<div class="section-subtitle">Empirical validation of CloneCatcher AI modules using unit and integration testing skills.</div>
 
 <div class="content-box">
   <p style="margin-bottom: 12px; color: var(--text-muted);">
-    The PhishSentry AI platform was rigorously audited across all five core system components: <strong>Lexical Analysis</strong>, <strong>Playwright DOM N-Gram Extraction</strong>, <strong>ResNet-50 Visual Similarity Embedding</strong>, <strong>XGBoost Fusion Classifier with SHAP</strong>, and the <strong>FastAPI Endpoints</strong>.
+    The CloneCatcher AI platform was rigorously audited across all five core system components: <strong>Lexical Analysis</strong>, <strong>Playwright DOM N-Gram Extraction</strong>, <strong>ResNet-50 Visual Similarity Embedding</strong>, <strong>XGBoost Fusion Classifier with SHAP</strong>, and the <strong>FastAPI Endpoints</strong>.
   </p>
 
   <table class="data-table">
@@ -561,15 +561,15 @@ html_content = """<!DOCTYPE html>
 </div>
 
 <div class="footer-note">
-  Generated automatically by PhishSentry AI Cybersecurity Skill Testing Agent | Confidential Report | 2026
+  Generated automatically by CloneCatcher AI Cybersecurity Skill Testing Agent | Confidential Report | 2026
 </div>
 
 </body>
 </html>
 """
 
-html_path = "J:/PROGRAM/project/Pishentry/PhishSentry_10X_SOC_Testing_Report.html"
-pdf_path = "J:/PROGRAM/project/Pishentry/PhishSentry_10X_SOC_Testing_Report.pdf"
+html_path = "J:/PROGRAM/project/CloneCatcher/CloneCatcher_10X_SOC_Testing_Report.html"
+pdf_path = "J:/PROGRAM/project/CloneCatcher/CloneCatcher_10X_SOC_Testing_Report.pdf"
 
 with open(html_path, "w", encoding="utf-8") as f:
     f.write(html_content)

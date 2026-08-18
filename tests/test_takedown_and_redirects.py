@@ -36,7 +36,7 @@ def test_takedown_notice_generation():
     assert "abuse@namecheap.com" in pkg.registrar_abuse_email
     assert "URGENT ABUSE TAKEDOWN" in pkg.subject_line
     assert "198.51.100.42" in pkg.body_text
-    assert "PhishSentry AI" in pkg.body_text
+    assert "CloneCatcher AI" in pkg.body_text
     assert "paypal.com" in pkg.body_text
 
 def test_redirect_tracer_direct():

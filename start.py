@@ -28,7 +28,7 @@ def wait_for_api(timeout_seconds: int = 15):
 
 def main():
   print("==================================================")
-  print(" Starting PhishSentry AI (Backend + Frontend)")
+  print(" Starting CloneCatcher AI (Backend + Frontend)")
   print("==================================================")
   
   python_exe = sys.executable
@@ -65,7 +65,7 @@ def main():
       time.sleep(2)
       
   except KeyboardInterrupt:
-    print("\n Shutting down PhishSentry AI processes...")
+    print("\n Shutting down CloneCatcher AI processes...")
   finally:
     for p in processes:
       if p.poll() is None:

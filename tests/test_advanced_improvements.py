@@ -47,7 +47,7 @@ def test_yara_rule_generator():
         "s_phish": 0.92
     }
     yara_rule = generate_yara_rule(scan_result)
-    assert "rule PhishSentry_" in yara_rule
+    assert "rule CloneCatcher_" in yara_rule
     assert "paypa1-update.xyz" in yara_rule
     assert "$form_input" in yara_rule
 

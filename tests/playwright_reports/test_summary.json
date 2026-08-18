@@ -11,7 +11,7 @@
     "FastAPI STIX 2.1 Export (/export/stix) -> Bundle generated successfully",
     "FastAPI Takedown Notice Generator (/takedown/generate) -> Legal notice body created",
     "Streamlit UI main page loaded (HTTP 200)",
-    "Found 'PhishSentry AI' banner header",
+    "Found 'CloneCatcher AI' banner header",
     "System Diagnostics shows 'CONNECTED TO BACKEND'",
     "Found 3 total tabs on page (main + subtabs)",
     "Found 'Single URL Deep Triage' main tab",
