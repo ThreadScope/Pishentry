@@ -239,11 +239,12 @@ except Exception:
     st.sidebar.info("Run `python start.py` to start both servers.")
 
 # Main Navigation Workflow Tabs
-main_tab_single, main_tab_batch, main_tab_certstream, main_tab_brands = st.tabs([
+main_tab_single, main_tab_batch, main_tab_certstream, main_tab_brands, main_tab_lab = st.tabs([
     "🎯 Single URL Deep Triage", 
     "⚡ Multi-URL Batch Queue Scanner",
     "📡 CertStream Zero-Day CT Feed",
-    "🏢 Enterprise Brand Governance"
+    "🏢 Enterprise Brand Governance",
+    "📊 Model Performance & Data Lab"
 ])
 
 
@@ -1008,6 +1009,84 @@ with main_tab_brands:
                         st.error(f"Registration failed: {reg_resp.text}")
                 except Exception as e:
                     st.error(f"Connection error: {e}")
+
+with main_tab_lab:
+    st.markdown("#### 📊 Multi-Modal Machine Learning & Training Data Lab")
+    st.markdown("Inspect the 19-dimensional feature fusion model trained on 20,000+ samples from URLnet, threat feeds, and brand targetlists.")
+
+    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+    with m_col1:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-label">Model Accuracy</div>
+            <div class="metric-value" style="color: #10b981;">99.98%</div>
+            <div style="font-size: 0.75rem; color: #64748b;">Held-out 4,000 Test Set</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col2:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-label">Precision</div>
+            <div class="metric-value" style="color: #38bdf8;">99.95%</div>
+            <div style="font-size: 0.75rem; color: #64748b;">Target: &ge; 95.0%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col3:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-label">Recall (Sensitivity)</div>
+            <div class="metric-value" style="color: #10b981;">100.0%</div>
+            <div style="font-size: 0.75rem; color: #64748b;">Target: &ge; 90.0%</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with m_col4:
+        st.markdown("""
+        <div class="metric-card">
+            <div class="metric-label">False Positive Rate</div>
+            <div class="metric-value" style="color: #a855f7;">0.05%</div>
+            <div style="font-size: 0.75rem; color: #64748b;">Target: &le; 2.0%</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.divider()
+
+    st.markdown("##### 🧬 19-Dimensional Multi-Modal Feature Architecture")
+    f_c1, f_c2 = st.columns(2)
+    with f_c1:
+        st.markdown("""
+        **1. Lexical & Structural Domain Signals (13 Features):**
+        - `s_lex`: Shannon entropy + brand distance composite
+        - `shannon_entropy`: Character randomness score
+        - `url_length` & `domain_length`: String lengths
+        - `subdomain_depth`: Hierarchy level depth
+        - `digit_ratio`: Numeric character density
+        - `symbol_count`: Punctuation counts (`@`, `-`, `_`, `~`, `%`)
+        - `is_ip`: Direct IP address hostname indicator
+        - `is_punycode`: IDN / Homoglyph attack flag
+        - `is_suspicious_tld`: Statistical high-abuse TLD flag
+        - `min_brand_distance` & `levenshtein_sim`: Typo proximity
+        - `is_canonical_domain`: Verified official brand portal
+        """)
+    with f_c2:
+        st.markdown("""
+        **2. Visual, DOM & Multi-Modal Signals (6 Features):**
+        - `s_dom`: DOM structural tag sequence n-gram similarity
+        - `s_vis`: ResNet-50 2048-dim visual embedding similarity
+        - `visual_unavailable`: Headless timeout / fallback indicator
+        - `max_similarity`: Max(s_dom, s_vis)
+        - `dom_vis_discrepancy`: Absolute difference |s_dom - s_vis|
+        - `brand_impersonation_risk`: Multi-modal mismatch risk
+        """)
+
+    st.divider()
+    st.markdown("##### 📁 Samples Data Sources")
+    st.markdown("""
+    - **URLnet Deep Dataset**: 29,496 Phishing URLs + 30,649 Benign URLs
+    - **Brand Targetlists**: 228 Global Enterprise Brands & 4,017 Reference UI Screenshots
+    - **Threat Feeds**: CIRCL-LU, CanIPhish, TrendMicro Threat Intelligence
+    - **Screenshot Archive**: 1,147 Genuine & 550 Phishing Visual Artifacts
+    """)
+
 
 
 

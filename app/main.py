@@ -146,6 +146,8 @@ async def lifespan(app: FastAPI):
             img_file = os.path.join(BASE_DIR, b["screenshot_path"].replace("/", os.sep))
             if os.path.exists(img_file):
                 state.visual_store.load_reference_brand(b["brand_id"], img_file)
+        # Load extended enterprise brand targets from sample datasets
+        state.visual_store.load_sample_brand_targetlists(max_brands=50)
 
     # 6. Load Fusion Classifier
     if state.fusion_model is None:
@@ -447,7 +449,13 @@ async def _execute_single_scan(url: str) -> ScanResult:
 
     # Stage 5 & 6: Fusion & Explainability (XGBoost + SHAP)
     if state.fusion_model is not None:
-        s_phish, shap_contribs, confidence = state.fusion_model.predict(s_lex, s_dom, s_vis)
+        s_phish, shap_contribs, confidence = state.fusion_model.predict(
+            s_lex, s_dom, s_vis,
+            url=cleaned_url,
+            brand_list=state.brand_names,
+            canonical_map=state.canonical_map,
+            lex_features=lex_res
+        )
     else:
         s_phish = s_lex
         shap_contribs = {"s_lex": 1.0, "s_dom": 0.0, "s_vis": 0.0}

@@ -1,3 +1,5 @@
+import os
+import glob
 import io
 import logging
 from typing import Dict, Tuple, Optional
@@ -156,6 +158,37 @@ class ReferenceBrandVisualStore:
             logger.info(f"Loaded and cached dual-engine visual embeddings for brand: {brand_id}")
         except Exception as e:
             logger.error(f"Failed to load reference image for {brand_id} from {image_path}: {e}")
+
+    def load_sample_brand_targetlists(self, max_brands: int = 100):
+        """
+        Discovers and caches reference screenshots from samples/merge_targetlist directories.
+        """
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        samples_dir = os.path.join(base_dir, "samples")
+        if not os.path.exists(samples_dir):
+            return
+
+        import glob
+        target_dirs = glob.glob(os.path.join(samples_dir, "**", "merge_targetlist"), recursive=True)
+        loaded_count = 0
+        for td in target_dirs:
+            if not os.path.isdir(td):
+                continue
+            for brand_folder in os.listdir(td):
+                bp = os.path.join(td, brand_folder)
+                if os.path.isdir(bp):
+                    clean_id = brand_folder.lower().replace(" ", "").replace("_", "")
+                    if clean_id in self.brand_embeddings:
+                        continue
+                    imgs = [os.path.join(bp, f) for f in os.listdir(bp) if f.endswith((".png", ".jpg", ".jpeg"))]
+                    if imgs:
+                        self.load_reference_brand(clean_id, imgs[0])
+                        loaded_count += 1
+                        if loaded_count >= max_brands:
+                            break
+            if loaded_count >= max_brands:
+                break
+        logger.info(f"Loaded {loaded_count} extra reference brands from sample targetlists.")
 
     def find_best_match(self, candidate_image_bytes: bytes) -> Tuple[float, Optional[str]]:
         """
