@@ -29,10 +29,10 @@ if "last_scan_data" not in st.session_state:
 if "batch_results" not in st.session_state:
   st.session_state.batch_results = None
 
-# High-Precision Cyber SOC Theme CSS
+# High-Precision Cyber SOC Glassmorphic Theme CSS
 CUSTOM_CSS = """
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
   html, body, [class*="css"] {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -42,69 +42,104 @@ CUSTOM_CSS = """
     font-family: 'JetBrains Mono', monospace !important;
   }
 
+  /* Deep Space Canvas */
   .stApp {
-    background-color: #0b0f19;
+    background: radial-gradient(circle at 50% 0%, #0d1527 0%, #060913 70%);
     color: #f8fafc;
   }
 
-  /* Header Banner */
+  /* Header Glass Banner */
   .header-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.25rem 1.75rem;
-    background: #111827;
-    border: 1px solid #1f2937;
-    border-radius: 12px;
-    margin-bottom: 1.25rem;
+    padding: 1.35rem 2rem;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
   }
   
   .brand-title {
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: #f8fafc;
+    color: #ffffff;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 
   .brand-subtitle {
     font-size: 0.85rem;
     color: #94a3b8;
-    margin-top: 0.2rem;
+    margin-top: 0.3rem;
     font-weight: 500;
   }
 
+  /* Animated Online Status Badge */
   .badge-status-online {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     background: rgba(16, 185, 129, 0.12);
-    color: #10b981;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    padding: 0.35rem 0.75rem;
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    padding: 0.45rem 0.9rem;
     border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
   }
 
-  /* Card Panels */
+  .pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    animation: pulse-dot-anim 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+  }
+
+  @keyframes pulse-dot-anim {
+    to {
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* Metric Cards */
   .metric-card {
-    background: #131b29;
-    border: 1px solid #1e293b;
-    border-radius: 10px;
-    padding: 1.25rem;
+    background: rgba(19, 27, 41, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 14px;
+    padding: 1.35rem;
     height: 100%;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .metric-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(56, 189, 248, 0.3);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.1);
   }
 
   .metric-label {
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.07em;
     color: #64748b;
     font-weight: 700;
     margin-bottom: 0.4rem;
   }
 
   .metric-value {
-    font-size: 1.65rem;
+    font-size: 1.75rem;
     font-weight: 800;
     color: #f8fafc;
     font-family: 'JetBrains Mono', monospace;
@@ -112,92 +147,136 @@ CUSTOM_CSS = """
 
   /* Verdict Banners */
   .verdict-critical {
-    background: rgba(239, 68, 68, 0.12);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
     border: 1px solid rgba(239, 68, 68, 0.4);
-    border-left: 5px solid #ef4444;
-    border-radius: 10px;
-    padding: 1.5rem;
+    border-left: 6px solid #ef4444;
+    border-radius: 14px;
+    padding: 1.65rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 12px 30px rgba(239, 68, 68, 0.15);
   }
 
   .verdict-suspicious {
-    background: rgba(245, 158, 11, 0.12);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
     border: 1px solid rgba(245, 158, 11, 0.4);
-    border-left: 5px solid #f59e0b;
-    border-radius: 10px;
-    padding: 1.5rem;
+    border-left: 6px solid #f59e0b;
+    border-radius: 14px;
+    padding: 1.65rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.15);
   }
 
   .verdict-safe {
-    background: rgba(16, 185, 129, 0.12);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.9) 100%);
     border: 1px solid rgba(16, 185, 129, 0.4);
-    border-left: 5px solid #10b981;
-    border-radius: 10px;
-    padding: 1.5rem;
+    border-left: 6px solid #10b981;
+    border-radius: 14px;
+    padding: 1.65rem;
     margin-bottom: 1.5rem;
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.15);
   }
 
   .verdict-tag {
     display: inline-block;
     font-size: 0.75rem;
     font-weight: 800;
-    letter-spacing: 0.08em;
-    padding: 0.25rem 0.6rem;
-    border-radius: 4px;
+    letter-spacing: 0.09em;
+    padding: 0.3rem 0.7rem;
+    border-radius: 6px;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
   }
 
-  .tag-critical { background: #ef4444; color: #ffffff; }
-  .tag-suspicious { background: #f59e0b; color: #000000; }
-  .tag-safe { background: #10b981; color: #ffffff; }
+  .tag-critical { background: #ef4444; color: #ffffff; box-shadow: 0 0 12px rgba(239, 68, 68, 0.4); }
+  .tag-suspicious { background: #f59e0b; color: #000000; box-shadow: 0 0 12px rgba(245, 158, 11, 0.4); }
+  .tag-safe { background: #10b981; color: #ffffff; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
 
   /* Custom Input Form styling */
   .stTextInput > div > div > input, .stTextArea > div > div > textarea {
-    background-color: #151d2a !important;
+    background-color: #0f172a !important;
     color: #f8fafc !important;
-    border: 1px solid #334155 !important;
-    border-radius: 8px !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 10px !important;
     font-family: 'JetBrains Mono', monospace !important;
     font-size: 0.95rem !important;
+    padding: 0.65rem 1rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
   }
 
-  .stButton > button {
-    background: #0284c7 !important;
+  .stTextInput > div > div > input:focus, .stTextArea > div > div > textarea:focus {
+    border-color: #0284c7 !important;
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25) !important;
+  }
+
+  /* Primary Button Styling */
+  .stButton > button, .stDownloadButton > button {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
     color: #ffffff !important;
     font-weight: 700 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.55rem 1.25rem !important;
+    border: 1px solid rgba(56, 189, 248, 0.3) !important;
+    border-radius: 10px !important;
+    padding: 0.6rem 1.35rem !important;
     letter-spacing: 0.02em !important;
-    transition: all 0.2s ease !important;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
   }
 
-  .stButton > button:hover {
-    background: #0369a1 !important;
-    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3) !important;
+  .stButton > button:hover, .stDownloadButton > button:hover {
+    background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 22px rgba(56, 189, 248, 0.4) !important;
+    color: #ffffff !important;
+  }
+
+  .stButton > button:active, .stDownloadButton > button:active {
+    transform: translateY(0) !important;
   }
 
   /* Tabs Override */
   .stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
-    border-bottom: 1px solid #1e293b;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 2px;
   }
 
   .stTabs [data-baseweb="tab"] {
-    background-color: #131b29;
-    border-radius: 6px 6px 0 0;
+    background-color: rgba(19, 27, 41, 0.6);
+    border-radius: 8px 8px 0 0;
     color: #94a3b8;
     font-weight: 600;
     font-size: 0.85rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.6rem 1.35rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+  }
+
+  .stTabs [data-baseweb="tab"]:hover {
+    color: #f8fafc;
+    background-color: rgba(30, 41, 59, 0.8);
   }
 
   .stTabs [aria-selected="true"] {
     background-color: #1e293b !important;
     color: #38bdf8 !important;
     border-bottom: 2px solid #38bdf8 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 -4px 12px rgba(56, 189, 248, 0.15) !important;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #060913;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
   }
 </style>
 """
@@ -208,15 +287,21 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 st.markdown("""
 <div class="header-container">
   <div>
-    <div class="brand-title">PhishSentry AI <span style="color: #38bdf8; font-weight: 500; font-size: 0.85rem;">ENTERPRISE SOC CONSOLE</span></div>
+    <div class="brand-title">
+      🛡️ PhishSentry AI 
+      <span style="color: #38bdf8; font-weight: 600; font-size: 0.85rem; background: rgba(56, 189, 248, 0.12); padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(56, 189, 248, 0.3);">ENTERPRISE SOC CONSOLE</span>
+    </div>
     <div class="brand-subtitle">Multi-Modal Threat Attribution, Dual-Engine Visual Matching, TLS Telemetry & STIX 2.1 Ingestion</div>
   </div>
-  <div class="badge-status-online">ENTERPRISE PIPELINE ACTIVE</div>
+  <div class="badge-status-online">
+    <div class="pulse-dot"></div>
+    ENTERPRISE PIPELINE ACTIVE
+  </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar System Diagnostics & Configuration
-st.sidebar.markdown("### System Diagnostics")
+st.sidebar.markdown("### ⚙️ System Diagnostics")
 api_url_input = st.sidebar.text_input("FastAPI Endpoint", value=API_BASE_URL)
 
 try:
@@ -224,12 +309,30 @@ try:
   if health_resp.status_code == 200:
     hdata = health_resp.json()
     st.sidebar.markdown(f"""
-    <div style="background: #131b29; padding: 0.85rem; border-radius: 8px; border: 1px solid #1e293b; margin-top: 0.5rem;">
-      <div style="font-size: 0.8rem; color: #10b981; font-weight: 600; margin-bottom: 0.4rem;">CONNECTED TO BACKEND</div>
-      <div style="font-size: 0.75rem; color: #94a3b8;">Protected Brands: <strong style="color: #f8fafc;">{hdata.get('brands_loaded', 0)}</strong></div>
-      <div style="font-size: 0.75rem; color: #94a3b8;">Fusion Engine: <strong style="color: #f8fafc;">{'XGBoost + SHAP' if hdata.get('model_loaded') else 'Heuristic'}</strong></div>
-      <div style="font-size: 0.75rem; color: #94a3b8;">Visual Engine: <strong style="color: #f8fafc;">ResNet-50 + dHash</strong></div>
-      <div style="font-size: 0.75rem; color: #94a3b8;">Renderer: <strong style="color: #f8fafc;">Persistent Chromium</strong></div>
+    <div style="background: rgba(15, 23, 42, 0.8); padding: 1rem; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.25); margin-top: 0.5rem; backdrop-filter: blur(10px);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.6rem;">
+        <span style="font-size: 0.8rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+          <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+          CONNECTED TO BACKEND
+        </span>
+        <span style="font-size: 0.7rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px; font-weight: 600;">v2.4.0</span>
+      </div>
+      <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
+        <span style="color: #94a3b8;">Protected Brands:</span>
+        <strong style="color: #38bdf8;">{hdata.get('brands_loaded', 0)} Active</strong>
+      </div>
+      <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
+        <span style="color: #94a3b8;">Fusion Engine:</span>
+        <strong style="color: #f8fafc;">{'XGBoost + SHAP' if hdata.get('model_loaded') else 'Heuristic'}</strong>
+      </div>
+      <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
+        <span style="color: #94a3b8;">Visual Engine:</span>
+        <strong style="color: #a855f7;">ResNet-50 + dHash</strong>
+      </div>
+      <div style="font-size: 0.78rem; color: #cbd5e1; display: flex; justify-content: space-between;">
+        <span style="color: #94a3b8;">Renderer:</span>
+        <strong style="color: #10b981;">Persistent Chromium</strong>
+      </div>
     </div>
     """, unsafe_allow_html=True)
   else:
@@ -238,14 +341,56 @@ except Exception:
   st.sidebar.warning(f"Offline at {api_url_input}")
   st.sidebar.info("Run `python start.py` to start both servers.")
 
+# Sidebar Scan History Feed
+if st.session_state.scan_history:
+  st.sidebar.markdown("---")
+  st.sidebar.markdown("### 📋 Live Session History")
+  for h in st.session_state.scan_history[:5]:
+    prob = h["s_phish"] * 100
+    p_color = "#ef4444" if prob >= 65 else ("#f59e0b" if prob >= 35 else "#10b981")
+    st.sidebar.markdown(f"""
+    <div style="background: rgba(15, 23, 42, 0.6); padding: 0.65rem 0.85rem; border-radius: 8px; border-left: 3px solid {p_color}; margin-bottom: 0.5rem; font-size: 0.75rem;">
+      <div style="display: flex; justify-content: space-between; font-weight: 700;">
+        <span style="color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px;">{h['url']}</span>
+        <span style="color: {p_color};">{prob:.0f}%</span>
+      </div>
+      <div style="color: #64748b; font-size: 0.7rem; margin-top: 2px; display: flex; justify-content: space-between;">
+        <span>{h['timestamp']}</span>
+        <span>{h['latency_ms']:.0f}ms</span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 # Main Navigation Workflow Tabs
 main_tab_single, main_tab_batch, main_tab_lab = st.tabs([
-  "Single URL Deep Triage", 
-  "Multi-URL Batch Queue Scanner",
-  "Model Performance & Data Lab"
+  "🔍 Single URL Deep Triage", 
+  "⚡ Multi-URL Batch Queue Scanner",
+  "🧪 Model Performance & Data Lab"
 ])
 
 with main_tab_single:
+  # Quick Preset Scenario Selector Bar
+  st.markdown("<div style='font-size: 0.8rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.4rem;'>⚡ Quick Test Scenario Presets:</div>", unsafe_allow_html=True)
+  p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+  with p_col1:
+    if st.button("💳 PayPal Typosquat", use_container_width=True):
+      st.session_state.target_url_input = "http://paypa1-secure-login.tk/auth"
+      st.rerun()
+  with p_col2:
+    if st.button("🔑 Google Auth Lure", use_container_width=True):
+      st.session_state.target_url_input = "http://accounts-goog1e-verify.xyz/signin"
+      st.rerun()
+  with p_col3:
+    if st.button("📦 DHL Express Lure", use_container_width=True):
+      st.session_state.target_url_input = "http://dhl-express-tracking-parcel.xyz/login"
+      st.rerun()
+  with p_col4:
+    if st.button("🌐 Verified Safe Domain", use_container_width=True):
+      st.session_state.target_url_input = "https://www.paypal.com"
+      st.rerun()
+
+  st.write("")
+
   # URL Input Scan Form
   with st.form("scan_form", clear_on_submit=False):
     col_input, col_submit = st.columns([5, 1])

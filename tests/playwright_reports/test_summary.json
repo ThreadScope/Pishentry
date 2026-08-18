@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-08-18 17:27:26",
+  "timestamp": "2026-08-18 17:59:24",
   "passed_count": 27,
   "passed_checks": [
     "FastAPI Health Check (/health) -> {'status': 'ok', 'model_loaded': True, 'brands_loaded': 8}",
     "FastAPI OpenAPI Docs (/docs) accessible",
-    "FastAPI Single Scan (/scan) -> s_phish: 0.984, latency: 1039.46ms",
+    "FastAPI Single Scan (/scan) -> s_phish: 0.9575, latency: 1545.41ms",
     "FastAPI Edge Case Malformed URL -> HTTP 400",
     "FastAPI Batch Scan (/scan/batch) -> Scanned 2 URLs successfully",
     "FastAPI Firewall Export (/export/firewall) -> Palo Alto & Cloudflare rules generated",
@@ -30,8 +30,16 @@
     "Switched to 'Model Performance & Data Lab' tab",
     "Model Data Lab metrics (99.98% Accuracy) rendered cleanly!"
   ],
-  "issues_count": 0,
-  "issues": [],
+  "issues_count": 1,
+  "issues": [
+    {
+      "category": "UI",
+      "title": "Webhook Dispatch Failed",
+      "description": "UI displayed error notification",
+      "severity": "MEDIUM",
+      "timestamp": "17:59:07"
+    }
+  ],
   "console_errors": [],
   "page_errors": [],
   "failed_requests": []
