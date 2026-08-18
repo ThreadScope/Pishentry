@@ -15,6 +15,56 @@ SUSPICIOUS_TLDS: Set[str] = {
     "click", "link", "surf", "casa", "bar", "lat", "live", "space", "support"
 }
 
+# High-risk security keywords & stemmed roots (Karmakar et al., 2025)
+URL_SECURITY_STEMS: Dict[str, float] = {
+    "verif": 0.35, "secur": 0.30, "login": 0.35, "signin": 0.35, "updat": 0.25,
+    "auth": 0.30, "servic": 0.20, "protect": 0.25, "bank": 0.35, "portal": 0.20,
+    "account": 0.30, "confirm": 0.30, "session": 0.25, "support": 0.20, "recover": 0.25,
+    "pass": 0.25, "token": 0.30, "webscr": 0.40, "ebayisapi": 0.40, "wallet": 0.35,
+    "billing": 0.30, "unlock": 0.35, "alert": 0.25, "valid": 0.25, "help": 0.15
+}
+
+def stem_token(word: str) -> str:
+    """Lightweight root-stemmer reducing inflections to common roots (e.g. verification -> verif)."""
+    w = word.lower().strip()
+    if len(w) <= 3:
+        return w
+    for suffix in ["ication", "action", "ization", "ement", "ities", "ingly", "ating", "ation", "ments", "ness", "ity", "ous", "ing", "ers", "ies", "ied", "ed", "es", "ly", "er", "or", "al", "s"]:
+        if w.endswith(suffix) and len(w) - len(suffix) >= 3:
+            w = w[:-len(suffix)]
+            break
+    return w
+
+def compute_url_nlp_risk(url: str) -> float:
+    """
+    Computes logistic regression NLP probability score based on token counts and stemmed vocabulary
+    per Karmakar et al. (2025) 'AI/ML Dual Approach for Phishing Domain Detection: URL and ImageAnalysis'.
+    Uses Sigmoid activation: P(phish) = 1 / (1 + e^-(w*x + b)).
+    """
+    if not url:
+        return 0.0
+    tokens = re.findall(r"[A-Za-z0-9]+", url.lower())
+    if not tokens:
+        return 0.0
+        
+    z = -2.5  # Base intercept b
+    matched_stems = 0
+    for tok in tokens:
+        stemmed = stem_token(tok)
+        for target_stem, weight in URL_SECURITY_STEMS.items():
+            if stemmed.startswith(target_stem) or target_stem in stemmed:
+                z += weight * 2.0
+                matched_stems += 1
+                break
+                
+    # If multiple security tokens co-occur in the URL path/host, apply synergistic boost
+    if matched_stems >= 2:
+        z += (matched_stems - 1) * 0.8
+        
+    # Sigmoid function
+    prob = 1.0 / (1.0 + math.exp(-max(-10.0, min(10.0, z))))
+    return round(float(prob), 4)
+
 @dataclass
 class LexicalFeatures:
     raw_domain: str
@@ -34,6 +84,8 @@ class LexicalFeatures:
     url_length: int
     is_canonical_domain: bool
     s_lex: float
+    url_nlp_risk: float = 0.0
+
 
 def compute_shannon_entropy(s: str) -> float:
     """Computes Shannon entropy for character distribution in a string."""
@@ -255,6 +307,7 @@ def analyze_lexical(
         if digit_ratio > 0.15:
             score += 0.15
 
+    url_nlp_risk = compute_url_nlp_risk(url)
     s_lex = min(1.0, max(0.0, score))
 
     return LexicalFeatures(
@@ -274,6 +327,7 @@ def analyze_lexical(
         digit_ratio=round(digit_ratio, 4),
         url_length=url_length,
         is_canonical_domain=is_canonical,
-        s_lex=round(s_lex, 4)
+        s_lex=round(s_lex, 4),
+        url_nlp_risk=url_nlp_risk
     )
 

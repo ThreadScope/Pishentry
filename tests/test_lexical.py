@@ -68,3 +68,15 @@ def test_ip_address_helpers():
     assert is_valid_ip_address("::1") is True
     assert is_valid_ip_address("paypal.com") is False
 
+def test_url_nlp_risk():
+    from app.lexical import compute_url_nlp_risk
+    
+    # Benign URL with generic terms
+    benign_score = compute_url_nlp_risk("https://example.com/about/company")
+    assert benign_score < 0.30
+    
+    # Phishing URL packed with security stems: verify, account, update, login
+    phish_score = compute_url_nlp_risk("http://auth-verify-account-update-login.xyz/session")
+    assert phish_score >= 0.75
+
+

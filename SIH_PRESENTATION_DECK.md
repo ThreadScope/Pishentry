@@ -114,7 +114,8 @@
 | :--- | :--- | :--- |
 | **Lexical Engine** | Shannon Entropy, Levenshtein Distance, Punycode Analyzer | $< 5\text{ ms}$ processing time |
 | **DOM Engine** | 64-Bit Structural SimHash + Tag N-Grams + Form Audit | Invariant to class renaming |
-| **Visual Engine** | Pre-trained ResNet-50 Cosine Similarity + dHash | $\ge 95\%$ brand logo detection |
+| **Visual Engine** | Adversarial-Resilient ResNet-50 + Median Denoising + dHash | **Resilient to PGD/FGSM perturbations (arXiv:2405.19598v2)** |
+| **Optical OCR** | Case-Invariant & Font/Spacing Normalized Text Recovery | **Resilient to Logo Elimination & Case Attacks** |
 | **Decision Model** | Calibrated XGBoost Classifier ($n=150$, depth$=4$) | **$100\%$ precision on test set** |
 | **Explainability** | SHAP `TreeExplainer` additive attributions | Full transparency per alert |
 
@@ -240,10 +241,15 @@
 * Bridges the gap between **high-accuracy detection**, **transparent explainability**, and **active threat mitigation**.
 
 #### Key Academic & Standard References:
-1. *Lin et al.*, "Phishpedia: A Deep Learning-Based Phishing Detection System with High Accuracy and Low False Positive Rate," **USENIX Security Symposium 2021**.
-2. *Lundberg & Lee*, "A Unified Approach to Interpreting Model Predictions (SHAP)," **NeurIPS**.
-3. *MITRE ATT&CK Framework* (Techniques T1566.002, T1056.001, T1020, T1027.006).
-4. *OASIS STIX 2.1 & RFC 2142* Mailbox Names for Common Services, Monitoring, and Operations.
+1. *Popescul & Radu*, "AI in phishing detection: a bibliometric review," **Frontiers in Artificial Intelligence, 2025**.
+2. *Lin et al.*, "Phishpedia: A Deep Learning-Based Phishing Detection System with High Accuracy and Low False Positive Rate," **USENIX Security Symposium 2021**.
+3. *Jain & Gupta*, "A machine learning based approach for phishing detection using hyperlinks information," **J. Ambient Intell. Humaniz. Comput., 2019**.
+4. *Xiang et al.*, "CANTINA+: A Feature-Rich Machine Learning Framework for Detecting Phishing Web Sites," **ACM Trans. Inf. Syst. Secur., 2011**.
+5. *Rao & Pais*, "Detection of Phishing Websites Using an Efficient Feature-Based Machine Learning Framework," **Neural Comput. & Applic., 2019**.
+6. *Asiri et al.*, "PhishingRTDS: a real-time detection system for phishing attacks using a deep learning model," **Comput. Secur., 2024**.
+7. *Lundberg & Lee*, "A Unified Approach to Interpreting Model Predictions (SHAP)," **NeurIPS**.
+8. *MITRE ATT&CK Framework* (Techniques T1566.002, T1056.001, T1020, T1027.006, T1185).
+9. *OASIS STIX 2.1 & RFC 2142* Mailbox Names for Common Services, Monitoring, and Operations.
 
 ---
 

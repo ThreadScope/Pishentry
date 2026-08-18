@@ -112,6 +112,19 @@ class DOMDeepForensicsTelemetry(BaseModel):
   has_zero_font_obfuscation: bool = False
   exfiltration_endpoints: List[str] = []
   has_shadow_dom_nodes: bool = False
+  # CANTINA+ & Client-Side DOM Forensics (Jain & Gupta 2018b, 2019; Xiang et al. 2011; Rao & Pais 2019)
+  total_hyperlinks_count: int = 0
+  null_hyperlinks_ratio: float = 0.0
+  external_hyperlinks_ratio: float = 0.0
+  internal_hyperlinks_ratio: float = 0.0
+  empty_anchor_tags_ratio: float = 0.0
+  anchor_text_discrepancy_count: int = 0
+  external_resources_ratio: float = 0.0
+  favicon_external_mismatch: bool = False
+  has_server_form_handler_mismatch: bool = False
+  has_right_click_disabled: bool = False
+  has_text_selection_disabled: bool = False
+  has_browser_in_the_browser: bool = False
 
 
 class PhishpediaTelemetry(BaseModel):
@@ -219,6 +232,36 @@ class MultiVendorFirewallResponse(BaseModel):
   cisco_asa_acl: str
   suricata_ips_rule: str
 
+class ISCXEnsembleTelemetry(BaseModel):
+  logistic_regression_score: float = 0.0
+  random_forest_score: float = 0.0
+  svm_decision: int = 0
+  ensemble_phish_score: float = 0.0
+  feature_vector_dim: int = 79
+
+class StackModelTelemetry(BaseModel):
+  internal_link: int = 0
+  external_link: int = 0
+  empty_link: int = 0
+  login_form: int = 0
+  html_len: int = 0
+  hidden: int = 0
+  alarm_window: int = 0
+  redirection: int = 0
+  title_domain: int = 0
+  brand_domain: int = 1
+  external_resource: int = 0
+  domain_is_ip: int = 0
+  sensitive_word: int = 0
+  https: int = 0
+  stackmodel_risk_score: float = 0.0
+
+class PhishZooTelemetry(BaseModel):
+  detected_brand: Optional[str] = None
+  brand_confidence: float = 0.0
+  matched_keywords: List[str] = []
+  token_count: int = 0
+
 class ScanResult(BaseModel):
   url: str
   s_lex: float
@@ -246,6 +289,9 @@ class ScanResult(BaseModel):
   redirect_graph: Optional[RedirectGraphTelemetry] = None
   threat_narrative: Optional[ThreatNarrativeResponse] = None
   firewall_rules: Optional[MultiVendorFirewallResponse] = None
+  iscx_ensemble: Optional[ISCXEnsembleTelemetry] = None
+  stackmodel_features: Optional[StackModelTelemetry] = None
+  phishzoo_analysis: Optional[PhishZooTelemetry] = None
   latency_ms: float
 
 

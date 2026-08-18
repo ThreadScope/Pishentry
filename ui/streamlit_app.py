@@ -798,6 +798,28 @@ with main_tab_single:
       df_b3.metric("Direct Exfil Hooks", f" {len(dom_f.get('exfiltration_endpoints', []))}" if dom_f.get("exfiltration_endpoints") else " 0")
       df_b4.metric("Shadow DOM Ingested", " YES" if dom_f.get("has_shadow_dom_nodes") else "NONE")
 
+      # CANTINA+ & Client-Side DOM Forensics HUD (Jain & Gupta 2019, Rao & Pais 2019, Asiri et al. 2024)
+      df_c1, df_c2, df_c3, df_c4 = st.columns(4)
+      df_c1.metric("Null Links Ratio", f"{dom_f.get('null_hyperlinks_ratio', 0.0)*100:.1f}%")
+      df_c2.metric("External Assets Ratio", f"{dom_f.get('external_resources_ratio', 0.0)*100:.1f}%")
+      df_c3.metric("Anchor Discrepancies", f" {dom_f.get('anchor_text_discrepancy_count', 0)}" if dom_f.get('anchor_text_discrepancy_count') else "0")
+      df_c4.metric("BiTB False Window", " DETECTED" if dom_f.get("has_browser_in_the_browser") else "CLEAN")
+
+      if dom_f.get("has_browser_in_the_browser"):
+        st.error(" **BROWSER-IN-THE-BROWSER (BiTB) ATTACK DETECTED** (MITRE T1185): Page embeds simulated desktop browser UI / OAuth modals with fake address bars!")
+
+      if dom_f.get("anchor_text_discrepancy_count", 0) > 0:
+        st.error(f" **DECEPTIVE ANCHOR TEXT MISMATCH**: Detected {dom_f.get('anchor_text_discrepancy_count')} hyperlink(s) displaying trusted brand names that route to external target hosts!")
+
+      if dom_f.get("has_server_form_handler_mismatch"):
+        st.warning("️ **SERVER FORM HANDLER (SFH) ANOMALY**: Credential form submits to empty, null (#), or javascript handlers instead of a legitimate POST processor.")
+
+      if dom_f.get("has_right_click_disabled"):
+        st.warning("️ **ANTI-ANALYSIS EVASION**: Right-click context menu has been programmatically disabled via JavaScript / oncontextmenu to obstruct source inspection.")
+
+      if dom_f.get("has_text_selection_disabled"):
+        st.info("ℹ️ **ANTI-SCRAPING / DEFENSE EVASION**: Text selection and copying is disabled on viewport.")
+
       if dom_f.get("has_form_action_mismatch"):
         st.error(" **CRITICAL FORM ACTION MISMATCH**: Authentication form action submits credentials to an external non-canonical host!")
 
@@ -826,7 +848,8 @@ with main_tab_single:
             "Action URL": fa.get("action_url"),
             "Target Host": fa.get("target_domain"),
             "External Mismatch": " YES" if fa.get("is_external_mismatch") else " NO",
-            "Password Field": "YES" if fa.get("has_password_field") else "NO"
+            "Password Field": "YES" if fa.get("has_password_field") else "NO",
+            "Null/SFH Action": "YES" if fa.get("is_null_or_empty_action") else "NO"
           })
         st.dataframe(pd.DataFrame(fa_records), use_container_width=True)
       else:
