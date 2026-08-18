@@ -362,8 +362,11 @@ class TestSchemaIntegration:
             stackmodel_features=StackModelTelemetry(stackmodel_risk_score=0.6),
             phishzoo_analysis=PhishZooTelemetry(detected_brand="paypal", brand_confidence=0.8)
         )
+        assert result.iscx_ensemble is not None
         assert result.iscx_ensemble.ensemble_phish_score == 0.75
+        assert result.stackmodel_features is not None
         assert result.stackmodel_features.stackmodel_risk_score == 0.6
+        assert result.phishzoo_analysis is not None
         assert result.phishzoo_analysis.detected_brand == "paypal"
 
     def test_scan_result_without_experiment_telemetry(self):

@@ -446,7 +446,7 @@ class ScanPipeline:
             random_forest_score=round(float(iscx_raw.get("rf_prob", 0.0)), 4),
             svm_decision=int(iscx_raw.get("svm_pred", 0)),
             ensemble_phish_score=round(float(iscx_raw.get("ensemble_score", 0.0)), 4),
-            feature_vector_dim=int(iscx_raw.get("feature_dim", 79))
+            feature_vector_dim=int(iscx_raw.get("feature_vector_dim", iscx_raw.get("feature_dim", 79)))
         )
 
         ctx.stackmodel_telemetry = StackModelTelemetry(

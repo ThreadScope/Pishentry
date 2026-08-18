@@ -8,7 +8,7 @@ from playwright.async_api import async_playwright, Page, Response, ConsoleMessag
 
 # Ensure UTF-8 output encoding for Windows console
 if hasattr(sys.stdout, 'reconfigure'):
-    sys.stdout.reconfigure(encoding='utf-8')
+    getattr(sys.stdout, 'reconfigure')(encoding='utf-8')
 
 STREAMLIT_URL = "http://localhost:8501"
 FASTAPI_URL = "http://127.0.0.1:8000"

@@ -60,7 +60,7 @@ def test_cloaking_cloudflare_turnstile():
     res = analyze_cloaking_and_anti_bot(turnstile_html, "http://suspicious-site.tk")
     assert res.is_cloaked is True
     assert res.is_bot_wall is True
-    assert "Turnstile" in res.interstitial_type
+    assert res.interstitial_type is not None and "Turnstile" in res.interstitial_type
 
 def test_subdomain_masquerading_lexical():
     lex = analyze_lexical(

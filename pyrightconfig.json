@@ -3,5 +3,18 @@
   "venv": ".venv",
   "extraPaths": [
     "."
+  ],
+  "include": [
+    "app",
+    "tests",
+    "ui",
+    "training",
+    "start.py"
+  ],
+  "exclude": [
+    "samples",
+    ".venv",
+    "build",
+    "dist"
   ]
 }

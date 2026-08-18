@@ -98,15 +98,15 @@ def train_and_eval(dataset_size: int = 20000):
         X.append(feats)
         y.append(entry["label"])
 
-    X = np.array(X, dtype=np.float32)
-    y = np.array(y, dtype=np.int32)
+    X_mat = np.array(X, dtype=np.float32)
+    y_vec = np.array(y, dtype=np.int32)
 
     # 80% Train / 20% Test Split
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.20, random_state=42, stratify=y
+        X_mat, y_vec, test_size=0.20, random_state=42, stratify=y_vec
     )
 
-    print(f"Training set: {X_train.shape[0]} samples, Test set: {X_test.shape[0]} samples.")
+    print(f"Training set: {len(X_train)} samples, Test set: {len(X_test)} samples.")
     print("Training optimized XGBoost Multi-Modal Fusion Classifier...")
 
     model = xgb.XGBClassifier(
@@ -126,9 +126,9 @@ def train_and_eval(dataset_size: int = 20000):
     y_prob = model.predict_proba(X_test)[:, 1]
 
     accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred, zero_division=0)
-    recall = recall_score(y_test, y_pred, zero_division=0)
-    f1 = f1_score(y_test, y_pred, zero_division=0)
+    precision = float(precision_score(y_test, y_pred, zero_division=0.0))
+    recall = float(recall_score(y_test, y_pred, zero_division=0.0))
+    f1 = float(f1_score(y_test, y_pred, zero_division=0.0))
     roc_auc = roc_auc_score(y_test, y_prob)
     
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()

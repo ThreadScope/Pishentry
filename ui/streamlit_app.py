@@ -696,6 +696,59 @@ with main_tab_single:
         """, unsafe_allow_html=True)
         st.progress(float(min(1.0, max(0.0, w_vis))))
 
+      # Experiment-Backed AI Model Telemetry HUD
+      iscx_d = data.get("iscx_ensemble") or {}
+      stack_d = data.get("stackmodel_features") or {}
+      phishzoo_d = data.get("phishzoo_analysis") or {}
+
+      st.markdown("---")
+      st.markdown("##### 🔬 Experiment-Backed Multi-Model Threat Intelligence")
+
+      exp_c1, exp_c2, exp_c3 = st.columns(3)
+      with exp_c1:
+        ens_score = iscx_d.get("ensemble_phish_score", 0.0)
+        lr_score = iscx_d.get("logistic_regression_score", 0.0)
+        rf_score = iscx_d.get("random_forest_score", 0.0)
+        svm_dec = iscx_d.get("svm_decision", 0)
+        st.markdown(f"""
+        <div class="metric-card" style="border-top: 3px solid #38bdf8;">
+          <div class="metric-label">⚡ ISCX 79-Dim Ensemble Score</div>
+          <div class="metric-value">{ens_score * 100:.1f}%</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+            LR: <code>{lr_score:.2f}</code> | RF: <code>{rf_score:.2f}</code> | SVM: <code>{'PHISH' if svm_dec==1 else 'SAFE'}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      with exp_c2:
+        stack_score = stack_d.get("stackmodel_risk_score", 0.0)
+        int_links = stack_d.get("internal_link", 0)
+        ext_links = stack_d.get("external_link", 0)
+        has_login = "YES" if stack_d.get("login_form") else "NO"
+        st.markdown(f"""
+        <div class="metric-card" style="border-top: 3px solid #f59e0b;">
+          <div class="metric-label">📊 StackModel 23-Feature Risk</div>
+          <div class="metric-value">{stack_score * 100:.1f}%</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+            Int/Ext Links: <code>{int_links}/{ext_links}</code> | Login Form: <code>{has_login}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      with exp_c3:
+        pz_brand = phishzoo_d.get("detected_brand") or "None"
+        pz_conf = phishzoo_d.get("brand_confidence", 0.0)
+        pz_tokens = phishzoo_d.get("token_count", 0)
+        st.markdown(f"""
+        <div class="metric-card" style="border-top: 3px solid #10b981;">
+          <div class="metric-label">🎯 PhishZoo Content Match</div>
+          <div class="metric-value" style="font-size: 1.15rem; text-transform: uppercase;">{pz_brand}</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+            Confidence: <code>{pz_conf * 100:.1f}%</code> | Tokens: <code>{pz_tokens}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
     with tab2:
       st.markdown("##### Real-Time Live Web Surface Render & Viewport Inspection")
       
