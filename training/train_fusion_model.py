@@ -1,7 +1,11 @@
 import json
 import os
+import sys
 import pickle
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     precision_score, recall_score, f1_score, roc_auc_score,

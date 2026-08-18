@@ -161,34 +161,44 @@ class ReferenceBrandVisualStore:
 
     def load_sample_brand_targetlists(self, max_brands: int = 100):
         """
-        Discovers and caches reference screenshots from samples/merge_targetlist directories.
+        Discovers and caches reference screenshots from samples/sample/data reference directories.
         """
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        samples_dir = os.path.join(base_dir, "samples")
-        if not os.path.exists(samples_dir):
-            return
+        search_dirs = [
+            os.path.join(base_dir, "samples"),
+            os.path.join(base_dir, "sample"),
+            os.path.join(base_dir, "data", "reference")
+        ]
 
         import glob
-        target_dirs = glob.glob(os.path.join(samples_dir, "**", "merge_targetlist"), recursive=True)
         loaded_count = 0
-        for td in target_dirs:
-            if not os.path.isdir(td):
+        for sdir in search_dirs:
+            if not os.path.exists(sdir):
                 continue
-            for brand_folder in os.listdir(td):
-                bp = os.path.join(td, brand_folder)
-                if os.path.isdir(bp):
-                    clean_id = brand_folder.lower().replace(" ", "").replace("_", "")
-                    if clean_id in self.brand_embeddings:
-                        continue
-                    imgs = [os.path.join(bp, f) for f in os.listdir(bp) if f.endswith((".png", ".jpg", ".jpeg"))]
-                    if imgs:
-                        self.load_reference_brand(clean_id, imgs[0])
-                        loaded_count += 1
-                        if loaded_count >= max_brands:
-                            break
+            target_dirs = glob.glob(os.path.join(sdir, "**", "merge_targetlist"), recursive=True)
+            if not target_dirs:
+                target_dirs = [sdir]
+
+            for td in target_dirs:
+                if not os.path.isdir(td):
+                    continue
+                for brand_folder in os.listdir(td):
+                    bp = os.path.join(td, brand_folder)
+                    if os.path.isdir(bp):
+                        clean_id = brand_folder.lower().replace(" ", "").replace("_", "")
+                        if clean_id in self.brand_embeddings:
+                            continue
+                        imgs = [os.path.join(bp, f) for f in os.listdir(bp) if f.endswith((".png", ".jpg", ".jpeg"))]
+                        if imgs:
+                            self.load_reference_brand(clean_id, imgs[0])
+                            loaded_count += 1
+                            if loaded_count >= max_brands:
+                                break
+                if loaded_count >= max_brands:
+                    break
             if loaded_count >= max_brands:
                 break
-        logger.info(f"Loaded {loaded_count} extra reference brands from sample targetlists.")
+        logger.info(f"Loaded {loaded_count} extra reference brands from sample/reference targetlists.")
 
     def find_best_match(self, candidate_image_bytes: bytes) -> Tuple[float, Optional[str]]:
         """

@@ -2,6 +2,7 @@
 __pycache__/
 *.py[codz]
 *$py.class
+skills/*
 
 # C extensions
 *.so
@@ -221,4 +222,8 @@ __marimo__/
 # Runtime artifacts
 artifacts/*.png
 !artifacts/.gitkeep
+
+# External dataset clones
+data/Phishing.Database/
+data/Cybersecurity-Datasets/
 
