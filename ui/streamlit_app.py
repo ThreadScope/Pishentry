@@ -833,6 +833,58 @@ with main_tab_single:
       else:
         st.warning(f"Plain HTTP Transport / Insecure Connection: {tls_data.get('error_detail', 'No TLS certificate presented.')}")
 
+      # HTTP Response Header Forensics & Server Infrastructure (Calibrated on 500K Empirical Headers)
+      hdr_data = data.get("header_forensics") or {}
+      st.markdown("---")
+      st.markdown("##### 🛡️ HTTP Response Header Forensics & Infrastructure Posture")
+      
+      h_col1, h_col2, h_col3 = st.columns(3)
+      with h_col1:
+        s_banner = hdr_data.get("server_banner", "Unadvertised")
+        is_out = hdr_data.get("is_outdated_server", False)
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Server Technology Banner</div>
+          <div class="metric-value" style="font-size: 1.05rem;">{s_banner}</div>
+          <div style="font-size: 0.78rem; color: {'#ef4444' if is_out else '#10b981'}; margin-top: 0.4rem; font-weight: 700;">
+            {'⚠️ Outdated / Vulnerable Software' if is_out else '✅ Modern / Masked Daemon'}
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      with h_col2:
+        cov_score = hdr_data.get("security_header_coverage_score", 0.0)
+        missing_count = len(hdr_data.get("missing_security_headers", []))
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Security Header Coverage (OWASP)</div>
+          <div class="metric-value">{cov_score * 100:.1f}%</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+            Missing: <strong style="color: {'#ef4444' if missing_count > 3 else '#f59e0b'};">{missing_count} essential headers</strong>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      with h_col3:
+        h_risk = hdr_data.get("header_anomaly_score", 0.0)
+        no_cache = "YES (Phish Kit Evasion)" if hdr_data.get("has_aggressive_no_cache") else "Normal"
+        st.markdown(f"""
+        <div class="metric-card">
+          <div class="metric-label">Header Anomaly Risk Score</div>
+          <div class="metric-value" style="color: {'#ef4444' if h_risk > 0.4 else '#38bdf8'};">{h_risk * 100:.1f}%</div>
+          <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 0.4rem;">
+            Anti-Cache Evasion: <code>{no_cache}</code>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+      if hdr_data.get("forensic_indicators"):
+        with st.expander("🔍 Detailed HTTP Header Forensic Audit Flags", expanded=False):
+          for ind in hdr_data["forensic_indicators"]:
+            st.markdown(f"- {ind}")
+          if hdr_data.get("missing_security_headers"):
+            st.caption("Missing Security Headers: " + ", ".join(hdr_data["missing_security_headers"]))
+
     with tab4:
       st.markdown("##### Real-Time DOM Node Extraction & Form Action Forensics")
       

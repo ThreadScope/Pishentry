@@ -25,7 +25,8 @@ from app.schemas import (
     RedirectTraceTelemetry, PhishingKitTelemetry, TargetAttributionTelemetry,
     HoneytokenExfiltrationTelemetry, VisualOCRTelemetry, RedirectGraphTelemetry,
     ThreatNarrativeResponse, MultiVendorFirewallResponse,
-    ISCXEnsembleTelemetry, StackModelTelemetry, PhishZooTelemetry
+    ISCXEnsembleTelemetry, StackModelTelemetry, PhishZooTelemetry,
+    HeaderForensicsTelemetry
 )
 
 from app.lexical import analyze_lexical, LexicalFeatures
@@ -56,6 +57,7 @@ from app.firewall_rules import generate_multi_vendor_firewall_rules
 from app.iscx_features import ISCXModelEnsemble
 from app.stackmodel_features import extract_stackmodel_23_features
 from app.phishzoo_tokenizer import analyze_content_brand_match
+from app.header_analyzer import analyze_http_headers
 
 logger = logging.getLogger("phishsentry.pipeline")
 
@@ -113,6 +115,7 @@ class PipelineContext:
     iscx_ensemble_telemetry: Optional[ISCXEnsembleTelemetry] = None
     stackmodel_telemetry: Optional[StackModelTelemetry] = None
     phishzoo_telemetry: Optional[PhishZooTelemetry] = None
+    header_forensics_telemetry: Optional[HeaderForensicsTelemetry] = None
 
 
 class ScanPipeline:
@@ -435,10 +438,22 @@ class ScanPipeline:
                 logger.debug(f"PhishZoo tokenization error: {e}")
                 return {"detected_brand": None, "brand_confidence": 0.0, "matched_keywords": [], "token_count": 0}
 
-        iscx_raw, stackmodel_raw, phishzoo_raw = await asyncio.gather(
+        def run_headers():
+            """HTTP Response Header Forensics & Security Posture Analysis."""
+            try:
+                raw_hdrs = ""
+                if ctx.raw_tls and hasattr(ctx.raw_tls, "raw_headers"):
+                    raw_hdrs = ctx.raw_tls.raw_headers
+                return analyze_http_headers(raw_hdrs)
+            except Exception as e:
+                logger.debug(f"Header forensics analysis error: {e}")
+                return {"server_banner": "Unadvertised", "is_outdated_server": False, "missing_security_headers": [], "security_header_coverage_score": 0.0, "has_insecure_cookies": False, "cookie_flags_audit": [], "cache_control_policy": "Default", "has_aggressive_no_cache": False, "redirect_chain_count": 0, "header_anomaly_score": 0.0, "forensic_indicators": []}
+
+        iscx_raw, stackmodel_raw, phishzoo_raw, header_raw = await asyncio.gather(
             asyncio.to_thread(run_iscx_ensemble),
             asyncio.to_thread(run_stackmodel),
-            asyncio.to_thread(run_phishzoo)
+            asyncio.to_thread(run_phishzoo),
+            asyncio.to_thread(run_headers)
         )
 
         ctx.iscx_ensemble_telemetry = ISCXEnsembleTelemetry(
@@ -472,6 +487,20 @@ class ScanPipeline:
             brand_confidence=round(float(phishzoo_raw.get("brand_confidence", 0.0)), 4),
             matched_keywords=phishzoo_raw.get("matched_keywords", []),
             token_count=int(phishzoo_raw.get("token_count", 0))
+        )
+
+        ctx.header_forensics_telemetry = HeaderForensicsTelemetry(
+            server_banner=header_raw.get("server_banner", "Unadvertised"),
+            is_outdated_server=bool(header_raw.get("is_outdated_server", False)),
+            missing_security_headers=header_raw.get("missing_security_headers", []),
+            security_header_coverage_score=round(float(header_raw.get("security_header_coverage_score", 0.0)), 4),
+            has_insecure_cookies=bool(header_raw.get("has_insecure_cookies", False)),
+            cookie_flags_audit=header_raw.get("cookie_flags_audit", []),
+            cache_control_policy=header_raw.get("cache_control_policy", "Default / Unspecified"),
+            has_aggressive_no_cache=bool(header_raw.get("has_aggressive_no_cache", False)),
+            redirect_chain_count=int(header_raw.get("redirect_chain_count", 0)),
+            header_anomaly_score=round(float(header_raw.get("header_anomaly_score", 0.0)), 4),
+            forensic_indicators=header_raw.get("forensic_indicators", [])
         )
 
 
@@ -847,5 +876,6 @@ class ScanPipeline:
             iscx_ensemble=ctx.iscx_ensemble_telemetry,
             stackmodel_features=ctx.stackmodel_telemetry,
             phishzoo_analysis=ctx.phishzoo_telemetry,
+            header_forensics=ctx.header_forensics_telemetry,
             latency_ms=total_latency_ms
         )

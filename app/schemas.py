@@ -262,6 +262,19 @@ class PhishZooTelemetry(BaseModel):
   matched_keywords: List[str] = []
   token_count: int = 0
 
+class HeaderForensicsTelemetry(BaseModel):
+  server_banner: str = "Unadvertised"
+  is_outdated_server: bool = False
+  missing_security_headers: List[str] = []
+  security_header_coverage_score: float = 0.0
+  has_insecure_cookies: bool = False
+  cookie_flags_audit: List[str] = []
+  cache_control_policy: str = "Default / Unspecified"
+  has_aggressive_no_cache: bool = False
+  redirect_chain_count: int = 0
+  header_anomaly_score: float = 0.0
+  forensic_indicators: List[str] = []
+
 class ScanResult(BaseModel):
   url: str
   s_lex: float
@@ -292,6 +305,7 @@ class ScanResult(BaseModel):
   iscx_ensemble: Optional[ISCXEnsembleTelemetry] = None
   stackmodel_features: Optional[StackModelTelemetry] = None
   phishzoo_analysis: Optional[PhishZooTelemetry] = None
+  header_forensics: Optional[HeaderForensicsTelemetry] = None
   latency_ms: float
 
 
